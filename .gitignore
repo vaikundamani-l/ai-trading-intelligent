@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!*.example
+
+# Database files & backups
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+backend/data/*.db
+backups/
+
+# Process IDs & Runtime logs
+.pids/
+logs/
+*.pid
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Node / Frontend build outputs
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+build/
+frontend/build/
+out/
+frontend/out/
+*.tsbuildinfo
+.vercel/
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

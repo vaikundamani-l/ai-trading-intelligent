@@ -1,0 +1,570 @@
+{
+  "generated_at": 1794249000,
+  "days": 90,
+  "candles": 8640,
+  "train_start": 1786473000,
+  "split": 1791129600,
+  "test_end": 1794249000,
+  "candidates": [
+    {
+      "spec": {
+        "minutes": 15,
+        "family": "BB_REENTRY",
+        "target_atr": 2.0,
+        "stop_atr": 2.0
+      },
+      "train": {
+        "trades": 132,
+        "wins": 65,
+        "win_rate_pct": 49.24242424242424,
+        "win_rate_interval_95_pct": [
+          40.85645767019153,
+          57.671239294508524
+        ],
+        "mean_net_bps": -9.352506381484798,
+        "sum_net_bps": -1234.5308423559932,
+        "profit_factor": 0.5878931515050657
+      }
+    },
+    {
+      "spec": {
+        "minutes": 15,
+        "family": "BB_REENTRY",
+        "target_atr": 0.75,
+        "stop_atr": 2.5
+      },
+      "train": {
+        "trades": 132,
+        "wins": 69,
+        "win_rate_pct": 52.27272727272727,
+        "win_rate_interval_95_pct": [
+          43.80857072193889,
+          60.60833838396091
+        ],
+        "mean_net_bps": -12.097226661572227,
+        "sum_net_bps": -1596.833919327534,
+        "profit_factor": 0.24628125195755401
+      }
+    },
+    {
+      "spec": {
+        "minutes": 15,
+        "family": "BB_REENTRY",
+        "target_atr": 0.5,
+        "stop_atr": 3.0
+      },
+      "train": {
+        "trades": 130,
+        "wins": 32,
+        "win_rate_pct": 24.615384615384617,
+        "win_rate_interval_95_pct": [
+          18.009686195009063,
+          32.678291235027636
+        ],
+        "mean_net_bps": -11.658933672769644,
+        "sum_net_bps": -1515.6613774600537,
+        "profit_factor": 0.10046332139190581
+      }
+    },
+    {
+      "spec": {
+        "minutes": 15,
+        "family": "BREAKOUT20",
+        "target_atr": 2.0,
+        "stop_atr": 2.0
+      },
+      "train": {
+        "trades": 182,
+        "wins": 71,
+        "win_rate_pct": 39.010989010989015,
+        "win_rate_interval_95_pct": [
+          32.221468276798184,
+          46.254825513182105
+        ],
+        "mean_net_bps": -15.038086605188244,
+        "sum_net_bps": -2736.9317621442606,
+        "profit_factor": 0.5003676511531622
+      }
+    },
+    {
+      "spec": {
+        "minutes": 15,
+        "family": "BREAKOUT20",
+        "target_atr": 0.75,
+        "stop_atr": 2.5
+      },
+      "train": {
+        "trades": 244,
+        "wins": 108,
+        "win_rate_pct": 44.26229508196721,
+        "win_rate_interval_95_pct": [
+          38.16671952493633,
+          50.53574204729369
+        ],
+        "mean_net_bps": -16.385684142901727,
+        "sum_net_bps": -3998.1069308680217,
+        "profit_factor": 0.21388775432350152
+      }
+    },
+    {
+      "spec": {
+        "minutes": 15,
+        "family": "BREAKOUT20",
+        "target_atr": 0.5,
+        "stop_atr": 3.0
+      },
+      "train": {
+        "trades": 259,
+        "wins": 70,
+        "win_rate_pct": 27.027027027027028,
+        "win_rate_interval_95_pct": [
+          21.983355291112154,
+          32.74222848253708
+        ],
+        "mean_net_bps": -17.64758624356093,
+        "sum_net_bps": -4570.724837082281,
+        "profit_factor": 0.08439903896483202
+      }
+    },
+    {
+      "spec": {
+        "minutes": 45,
+        "family": "BB_REENTRY",
+        "target_atr": 2.0,
+        "stop_atr": 2.0
+      },
+      "train": {
+        "trades": 42,
+        "wins": 22,
+        "win_rate_pct": 52.38095238095239,
+        "win_rate_interval_95_pct": [
+          37.72221394020704,
+          66.64063552403505
+        ],
+        "mean_net_bps": 1.8415563121244052,
+        "sum_net_bps": 77.34536510922501,
+        "profit_factor": 1.0723028337150522
+      },
+      "heldout": {
+        "trades": 38,
+        "wins": 15,
+        "win_rate_pct": 39.473684210526315,
+        "win_rate_interval_95_pct": [
+          25.597859263618904,
+          55.28241300130403
+        ],
+        "mean_net_bps": -20.32943634058203,
+        "sum_net_bps": -772.5185809421172,
+        "profit_factor": 0.5861194825786173
+      },
+      "heldout_double_cost": {
+        "trades": 38,
+        "wins": 14,
+        "win_rate_pct": 36.84210526315789,
+        "win_rate_interval_95_pct": [
+          23.384013155413793,
+          52.71632717573988
+        ],
+        "mean_net_bps": -34.12943634058203,
+        "sum_net_bps": -1296.9185809421172,
+        "profit_factor": 0.40730592303053625
+      }
+    },
+    {
+      "spec": {
+        "minutes": 45,
+        "family": "BB_REENTRY",
+        "target_atr": 0.75,
+        "stop_atr": 2.5
+      },
+      "train": {
+        "trades": 42,
+        "wins": 28,
+        "win_rate_pct": 66.66666666666666,
+        "win_rate_interval_95_pct": [
+          51.552227011666915,
+          78.9877192380277
+        ],
+        "mean_net_bps": -11.839063282783664,
+        "sum_net_bps": -497.2406578769139,
+        "profit_factor": 0.504546034562911
+      }
+    },
+    {
+      "spec": {
+        "minutes": 45,
+        "family": "BB_REENTRY",
+        "target_atr": 0.5,
+        "stop_atr": 3.0
+      },
+      "train": {
+        "trades": 42,
+        "wins": 29,
+        "win_rate_pct": 69.04761904761905,
+        "win_rate_interval_95_pct": [
+          53.973722233659416,
+          80.92907348027727
+        ],
+        "mean_net_bps": -8.363238684853773,
+        "sum_net_bps": -351.2560247638585,
+        "profit_factor": 0.4898755263007866
+      }
+    },
+    {
+      "spec": {
+        "minutes": 45,
+        "family": "BREAKOUT20",
+        "target_atr": 2.0,
+        "stop_atr": 2.0
+      },
+      "train": {
+        "trades": 66,
+        "wins": 30,
+        "win_rate_pct": 45.45454545454545,
+        "win_rate_interval_95_pct": [
+          34.0239312591756,
+          57.385200261293576
+        ],
+        "mean_net_bps": -11.681467713152665,
+        "sum_net_bps": -770.9768690680759,
+        "profit_factor": 0.7507971939839928
+      }
+    },
+    {
+      "spec": {
+        "minutes": 45,
+        "family": "BREAKOUT20",
+        "target_atr": 0.75,
+        "stop_atr": 2.5
+      },
+      "train": {
+        "trades": 93,
+        "wins": 65,
+        "win_rate_pct": 69.89247311827957,
+        "win_rate_interval_95_pct": [
+          59.93288866220661,
+          78.27383241633817
+        ],
+        "mean_net_bps": -12.049086806197318,
+        "sum_net_bps": -1120.5650729763506,
+        "profit_factor": 0.5643996155256896
+      }
+    },
+    {
+      "spec": {
+        "minutes": 45,
+        "family": "BREAKOUT20",
+        "target_atr": 0.5,
+        "stop_atr": 3.0
+      },
+      "train": {
+        "trades": 96,
+        "wins": 57,
+        "win_rate_pct": 59.375,
+        "win_rate_interval_95_pct": [
+          49.37370157726515,
+          68.65485565739455
+        ],
+        "mean_net_bps": -18.006719740767544,
+        "sum_net_bps": -1728.6450951136842,
+        "profit_factor": 0.2959542625794825
+      }
+    },
+    {
+      "spec": {
+        "minutes": 240,
+        "family": "BB_REENTRY",
+        "target_atr": 2.0,
+        "stop_atr": 2.0
+      },
+      "train": {
+        "trades": 7,
+        "wins": 4,
+        "win_rate_pct": 57.14285714285714,
+        "win_rate_interval_95_pct": [
+          25.04542304090258,
+          84.17830777373732
+        ],
+        "mean_net_bps": 47.859022552798294,
+        "sum_net_bps": 335.01315786958804,
+        "profit_factor": 1.7765854132443986
+      }
+    },
+    {
+      "spec": {
+        "minutes": 240,
+        "family": "BB_REENTRY",
+        "target_atr": 0.75,
+        "stop_atr": 2.5
+      },
+      "train": {
+        "trades": 6,
+        "wins": 5,
+        "win_rate_pct": 83.33333333333334,
+        "win_rate_interval_95_pct": [
+          43.649056343635394,
+          96.99474141282697
+        ],
+        "mean_net_bps": 33.77503982189973,
+        "sum_net_bps": 202.6502389313984,
+        "profit_factor": 2.292513792779606
+      }
+    },
+    {
+      "spec": {
+        "minutes": 240,
+        "family": "BB_REENTRY",
+        "target_atr": 0.5,
+        "stop_atr": 3.0
+      },
+      "train": {
+        "trades": 6,
+        "wins": 6,
+        "win_rate_pct": 100.0,
+        "win_rate_interval_95_pct": [
+          60.96569663469354,
+          99.99999999999999
+        ],
+        "mean_net_bps": 41.23854069683234,
+        "sum_net_bps": 247.43124418099404,
+        "profit_factor": null
+      }
+    },
+    {
+      "spec": {
+        "minutes": 240,
+        "family": "BREAKOUT20",
+        "target_atr": 2.0,
+        "stop_atr": 2.0
+      },
+      "train": {
+        "trades": 12,
+        "wins": 8,
+        "win_rate_pct": 66.66666666666666,
+        "win_rate_interval_95_pct": [
+          39.06175873976139,
+          86.18821601026386
+        ],
+        "mean_net_bps": 37.29529613310884,
+        "sum_net_bps": 447.54355359730613,
+        "profit_factor": 1.4077230817753417
+      }
+    },
+    {
+      "spec": {
+        "minutes": 240,
+        "family": "BREAKOUT20",
+        "target_atr": 0.75,
+        "stop_atr": 2.5
+      },
+      "train": {
+        "trades": 15,
+        "wins": 14,
+        "win_rate_pct": 93.33333333333333,
+        "win_rate_interval_95_pct": [
+          70.18292244757602,
+          98.81334113938051
+        ],
+        "mean_net_bps": 53.774554446443304,
+        "sum_net_bps": 806.6183166966496,
+        "profit_factor": 4.6679371192084655
+      }
+    },
+    {
+      "spec": {
+        "minutes": 240,
+        "family": "BREAKOUT20",
+        "target_atr": 0.5,
+        "stop_atr": 3.0
+      },
+      "train": {
+        "trades": 16,
+        "wins": 15,
+        "win_rate_pct": 93.75,
+        "win_rate_interval_95_pct": [
+          71.67073163197013,
+          98.88809426916687
+        ],
+        "mean_net_bps": 28.013227775578805,
+        "sum_net_bps": 448.2116444092609,
+        "profit_factor": 3.038153726192246
+      }
+    },
+    {
+      "spec": {
+        "minutes": 480,
+        "family": "BB_REENTRY",
+        "target_atr": 2.0,
+        "stop_atr": 2.0
+      },
+      "train": {
+        "trades": 3,
+        "wins": 3,
+        "win_rate_pct": 100.0,
+        "win_rate_interval_95_pct": [
+          43.84939195509823,
+          100
+        ],
+        "mean_net_bps": 282.8796500841758,
+        "sum_net_bps": 848.6389502525274,
+        "profit_factor": null
+      }
+    },
+    {
+      "spec": {
+        "minutes": 480,
+        "family": "BB_REENTRY",
+        "target_atr": 0.75,
+        "stop_atr": 2.5
+      },
+      "train": {
+        "trades": 3,
+        "wins": 3,
+        "win_rate_pct": 100.0,
+        "win_rate_interval_95_pct": [
+          43.84939195509823,
+          100
+        ],
+        "mean_net_bps": 97.45486878156584,
+        "sum_net_bps": 292.3646063446975,
+        "profit_factor": null
+      }
+    },
+    {
+      "spec": {
+        "minutes": 480,
+        "family": "BB_REENTRY",
+        "target_atr": 0.5,
+        "stop_atr": 3.0
+      },
+      "train": {
+        "trades": 3,
+        "wins": 3,
+        "win_rate_pct": 100.0,
+        "win_rate_interval_95_pct": [
+          43.84939195509823,
+          100
+        ],
+        "mean_net_bps": 60.369912521043396,
+        "sum_net_bps": 181.10973756313018,
+        "profit_factor": null
+      }
+    },
+    {
+      "spec": {
+        "minutes": 480,
+        "family": "BREAKOUT20",
+        "target_atr": 2.0,
+        "stop_atr": 2.0
+      },
+      "train": {
+        "trades": 7,
+        "wins": 5,
+        "win_rate_pct": 71.42857142857143,
+        "win_rate_interval_95_pct": [
+          35.892909014821264,
+          91.77828342909844
+        ],
+        "mean_net_bps": 168.3001816088866,
+        "sum_net_bps": 1178.1012712622062,
+        "profit_factor": 3.5613366921139233
+      }
+    },
+    {
+      "spec": {
+        "minutes": 480,
+        "family": "BREAKOUT20",
+        "target_atr": 0.75,
+        "stop_atr": 2.5
+      },
+      "train": {
+        "trades": 9,
+        "wins": 8,
+        "win_rate_pct": 88.88888888888889,
+        "win_rate_interval_95_pct": [
+          56.49937852319399,
+          98.01096286728695
+        ],
+        "mean_net_bps": 51.24175406258818,
+        "sum_net_bps": 461.1757865632936,
+        "profit_factor": 2.0628430916738956
+      }
+    },
+    {
+      "spec": {
+        "minutes": 480,
+        "family": "BREAKOUT20",
+        "target_atr": 0.5,
+        "stop_atr": 3.0
+      },
+      "train": {
+        "trades": 9,
+        "wins": 8,
+        "win_rate_pct": 88.88888888888889,
+        "win_rate_interval_95_pct": [
+          56.49937852319399,
+          98.01096286728695
+        ],
+        "mean_net_bps": 28.195455409889902,
+        "sum_net_bps": 253.75909868900914,
+        "profit_factor": 1.828836009998698
+      }
+    }
+  ],
+  "selected": {
+    "spec": {
+      "minutes": 45,
+      "family": "BB_REENTRY",
+      "target_atr": 2.0,
+      "stop_atr": 2.0
+    },
+    "train": {
+      "trades": 42,
+      "wins": 22,
+      "win_rate_pct": 52.38095238095239,
+      "win_rate_interval_95_pct": [
+        37.72221394020704,
+        66.64063552403505
+      ],
+      "mean_net_bps": 1.8415563121244052,
+      "sum_net_bps": 77.34536510922501,
+      "profit_factor": 1.0723028337150522
+    },
+    "heldout": {
+      "trades": 38,
+      "wins": 15,
+      "win_rate_pct": 39.473684210526315,
+      "win_rate_interval_95_pct": [
+        25.597859263618904,
+        55.28241300130403
+      ],
+      "mean_net_bps": -20.32943634058203,
+      "sum_net_bps": -772.5185809421172,
+      "profit_factor": 0.5861194825786173
+    },
+    "heldout_double_cost": {
+      "trades": 38,
+      "wins": 14,
+      "win_rate_pct": 36.84210526315789,
+      "win_rate_interval_95_pct": [
+        23.384013155413793,
+        52.71632717573988
+      ],
+      "mean_net_bps": -34.12943634058203,
+      "sum_net_bps": -1296.9185809421172,
+      "profit_factor": 0.40730592303053625
+    }
+  },
+  "promotion": "NOT PROMOTED",
+  "limitations": [
+    "Exploratory research on one venue and 90-day window.",
+    "13.8bps modeled round-trip costs; funding excluded, so net profitability is incomplete.",
+    "Wilson intervals assume independent trades; serial dependence and strategy selection add uncertainty.",
+    "Sum of trade bps is not a portfolio return.",
+    "All 24 training candidates disclosed; only the training-selected candidate is evaluated on the held-out period."
+  ],
+  "sources": [
+    "https://www.bollingerbands.com/bollinger-band-rules",
+    "https://www.davidhbailey.com/dhbpapers/backtest-prob.pdf"
+  ]
+}

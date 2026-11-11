@@ -1,0 +1,30 @@
+[Unit]
+Description=BTC Quantum Intelligence Frontend Service (Next.js Production)
+After=network.target btc-quantum-backend.service
+Wants=btc-quantum-backend.service
+
+[Service]
+Type=simple
+User=shadow-khan
+Group=shadow-khan
+WorkingDirectory=/home/shadow-khan/ai-trading-intelligent/frontend
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=BACKEND_INTERNAL_URL=http://127.0.0.1:8000
+Environment=PATH=/home/shadow-khan/.nvm/versions/node/v22.23.3/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-/home/shadow-khan/ai-trading-intelligent/.env
+ExecStart=/home/shadow-khan/.nvm/versions/node/v22.23.3/bin/node server.js
+Restart=always
+RestartSec=3s
+KillMode=process
+TimeoutStopSec=15
+LimitNOFILE=65536
+
+# Security Hardening
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/home/shadow-khan/ai-trading-intelligent/logs
+
+[Install]
+WantedBy=multi-user.target

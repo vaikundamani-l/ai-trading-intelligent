@@ -1,0 +1,43 @@
+{
+  "status": "SUCCESS",
+  "model_version": "BTC-QUANTUM-ML-v2-PURGED-ENSEMBLE",
+  "training_date": "2026-10-29 17:25 UTC",
+  "metrics": {
+    "5m": {
+      "baseline_brier": 0.25,
+      "brier_score": 0.2495,
+      "accuracy": 51.54,
+      "log_loss": 0.6922,
+      "test_samples": 293,
+      "train_samples": 680,
+      "is_validated": false
+    },
+    "15m": {
+      "baseline_brier": 0.2501,
+      "brier_score": 0.2488,
+      "accuracy": 54.79,
+      "log_loss": 0.6907,
+      "test_samples": 292,
+      "train_samples": 677,
+      "is_validated": false
+    },
+    "30m": {
+      "baseline_brier": 0.25,
+      "brier_score": 0.2524,
+      "accuracy": 46.74,
+      "log_loss": 0.698,
+      "test_samples": 291,
+      "train_samples": 672,
+      "is_validated": false
+    },
+    "1h": {
+      "baseline_brier": 0.2527,
+      "brier_score": 0.2601,
+      "accuracy": 47.06,
+      "log_loss": 0.7138,
+      "test_samples": 289,
+      "train_samples": 662,
+      "is_validated": false
+    }
+  }
+}

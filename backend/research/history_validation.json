@@ -1,0 +1,147 @@
+{
+  "requested_days": 30,
+  "candles": 8640,
+  "start": 1790703300,
+  "end": 1793295000,
+  "evaluations": [
+    {
+      "window_candles": 5184,
+      "evaluation": {
+        "status": "SUCCESS",
+        "model_version": "BTC-QUANTUM-ML-v2-PURGED-ENSEMBLE",
+        "training_date": "2026-10-29 17:33 UTC",
+        "metrics": {
+          "5m": {
+            "baseline_brier": 0.2501,
+            "brier_score": 0.2495,
+            "accuracy": 51.23,
+            "log_loss": 0.6922,
+            "test_samples": 1548,
+            "train_samples": 3609,
+            "is_validated": false
+          },
+          "15m": {
+            "baseline_brier": 0.2501,
+            "brier_score": 0.2502,
+            "accuracy": 49.52,
+            "log_loss": 0.6935,
+            "test_samples": 1547,
+            "train_samples": 3606,
+            "is_validated": false
+          },
+          "30m": {
+            "baseline_brier": 0.2509,
+            "brier_score": 0.2509,
+            "accuracy": 50.91,
+            "log_loss": 0.6949,
+            "test_samples": 1546,
+            "train_samples": 3601,
+            "is_validated": false
+          },
+          "1h": {
+            "baseline_brier": 0.2537,
+            "brier_score": 0.2535,
+            "accuracy": 46.15,
+            "log_loss": 0.7002,
+            "test_samples": 1545,
+            "train_samples": 3590,
+            "is_validated": false
+          }
+        }
+      }
+    },
+    {
+      "window_candles": 6912,
+      "evaluation": {
+        "status": "SUCCESS",
+        "model_version": "BTC-QUANTUM-ML-v2-PURGED-ENSEMBLE",
+        "training_date": "2026-10-29 17:33 UTC",
+        "metrics": {
+          "5m": {
+            "baseline_brier": 0.25,
+            "brier_score": 0.2499,
+            "accuracy": 51.89,
+            "log_loss": 0.6929,
+            "test_samples": 2066,
+            "train_samples": 4819,
+            "is_validated": false
+          },
+          "15m": {
+            "baseline_brier": 0.25,
+            "brier_score": 0.2501,
+            "accuracy": 51.45,
+            "log_loss": 0.6933,
+            "test_samples": 2066,
+            "train_samples": 4815,
+            "is_validated": false
+          },
+          "30m": {
+            "baseline_brier": 0.2501,
+            "brier_score": 0.2498,
+            "accuracy": 52.49,
+            "log_loss": 0.6927,
+            "test_samples": 2065,
+            "train_samples": 4810,
+            "is_validated": false
+          },
+          "1h": {
+            "baseline_brier": 0.2502,
+            "brier_score": 0.2517,
+            "accuracy": 50.7,
+            "log_loss": 0.6966,
+            "test_samples": 2063,
+            "train_samples": 4800,
+            "is_validated": false
+          }
+        }
+      }
+    },
+    {
+      "window_candles": 8640,
+      "evaluation": {
+        "status": "SUCCESS",
+        "model_version": "BTC-QUANTUM-ML-v2-PURGED-ENSEMBLE",
+        "training_date": "2026-10-29 17:33 UTC",
+        "metrics": {
+          "5m": {
+            "baseline_brier": 0.25,
+            "brier_score": 0.2502,
+            "accuracy": 50.54,
+            "log_loss": 0.6936,
+            "test_samples": 2584,
+            "train_samples": 6028,
+            "is_validated": false
+          },
+          "15m": {
+            "baseline_brier": 0.25,
+            "brier_score": 0.2496,
+            "accuracy": 53.75,
+            "log_loss": 0.6923,
+            "test_samples": 2584,
+            "train_samples": 6024,
+            "is_validated": false
+          },
+          "30m": {
+            "baseline_brier": 0.2501,
+            "brier_score": 0.2491,
+            "accuracy": 53.58,
+            "log_loss": 0.6914,
+            "test_samples": 2583,
+            "train_samples": 6019,
+            "is_validated": false
+          },
+          "1h": {
+            "baseline_brier": 0.2505,
+            "brier_score": 0.2496,
+            "accuracy": 51.07,
+            "log_loss": 0.6924,
+            "test_samples": 2581,
+            "train_samples": 6009,
+            "is_validated": false
+          }
+        }
+      }
+    }
+  ],
+  "notice": "Overlapping evaluation windows; exploratory diagnostics, not independent significance tests."
+}

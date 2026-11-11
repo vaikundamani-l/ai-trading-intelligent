@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Complete Architectural, Mathematical, and Operational Guide to BTC Quantum Intelligence - Institutional Quantitative Bitcoin Trading Platform.">
+  <title>About BTC Quantum Intelligence — Complete Architectural & Operational Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --card-bg: #0e131d;
+      --card-bg-2: #121721;
+      --card-bg-subtle: #161d2b;
+      --border: #1e2638;
+      --border-focus: #2d3b55;
+      --text: #ededed;
+      --text-muted: #8691a6;
+      --text-subtle: #5f6c82;
+      --cyan: #22d3ee;
+      --cyan-glow: rgba(34, 211, 238, 0.15);
+      --emerald: #34d399;
+      --emerald-glow: rgba(52, 211, 153, 0.15);
+      --rose: #fb7185;
+      --rose-glow: rgba(251, 113, 133, 0.15);
+      --amber: #fbbf24;
+      --amber-glow: rgba(251, 191, 36, 0.15);
+      --purple: #c084fc;
+      --blue: #3b82f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: radial-gradient(circle at 80% -10%, rgba(34, 211, 238, 0.06), transparent 40%),
+                  radial-gradient(circle at 10% 25%, rgba(52, 211, 153, 0.04), transparent 30%),
+                  var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .font-mono, code, pre, .badge-mono {
+      font-family: 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    }
+
+    .tamil-text {
+      font-family: 'Noto Sans Tamil', 'Inter', sans-serif;
+      line-height: 1.8;
+    }
+
+    /* Top Navigation Header */
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 14, 20, 0.94);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-weight: 900;
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.3);
+    }
+
+    .brand-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-name b {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: #fff;
+    }
+
+    .brand-tag {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--cyan);
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .instrument-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lang-switcher {
+      display: flex;
+      background: var(--card-bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .lang-btn.active {
+      background: var(--cyan);
+      color: #07090e;
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+    }
+
+    .live-feed-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--emerald);
+      background: var(--emerald-glow);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .btn-terminal {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(59, 130, 246, 0.2));
+      border: 1px solid rgba(34, 211, 238, 0.4);
+      padding: 6px 14px;
+      border-radius: 7px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-terminal:hover {
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.35), rgba(59, 130, 246, 0.35));
+      border-color: var(--cyan);
+      transform: translateY(-1px);
+    }
+
+    /* Page Layout */
+    .layout-container {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: calc(100vh - 64px);
+    }
+
+    /* Sidebar Navigation */
+    aside.sidebar {
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      background: #090c13;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--card-bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px 9px 34px;
+      color: #fff;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--cyan);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-subtle);
+      width: 14px;
+      height: 14px;
+    }
+
+    .nav-group-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-subtle);
+      padding: 6px 8px 2px;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item a:hover {
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+
+    .nav-item a.active {
+      background: rgba(34, 211, 238, 0.12);
+      color: var(--cyan);
+      font-weight: 600;
+      border-left: 2px solid var(--cyan);
+    }
+
+    .nav-num {
+      font-size: 10px;
+      color: var(--text-subtle);
+      font-family: 'Fira Code', monospace;
+      width: 18px;
+    }
+
+    .sidebar-callout {
+      margin-top: auto;
+      background: rgba(251, 191, 36, 0.05);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 9px;
+      padding: 12px;
+      font-size: 11px;
+      color: #d1b46a;
+      line-height: 1.5;
+    }
+
+    /* Main Content Area */
+    main.content-area {
+      padding: 40px clamp(20px, 4vw, 64px) 100px;
+      max-width: 1350px;
+      min-width: 0;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(18, 23, 33, 0.95), rgba(11, 14, 20, 0.98));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: clamp(24px, 4vw, 48px);
+      margin-bottom: 50px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-banner::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      background: rgba(34, 211, 238, 0.08);
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      padding: 4px 10px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .hero-title span.grad {
+      background: linear-gradient(90deg, #22d3ee, #60a5fa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: clamp(14px, 1.2vw, 16px);
+      color: #a4b1c7;
+      max-width: 840px;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    .hero-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+
+    .stat-card {
+      background: var(--card-bg-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stat-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Section Styling */
+    section.doc-section {
+      padding: 60px 0 20px;
+      border-top: 1px solid var(--border);
+      scroll-margin-top: 80px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .section-num {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text-subtle);
+      line-height: 1;
+      font-family: 'Fira Code', monospace;
+      padding-top: 4px;
+    }
+
+    .section-title-wrap {
+      flex: 1;
+    }
+
+    .section-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .section-title {
+      font-size: clamp(22px, 2.5vw, 30px);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .section-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 820px;
+      line-height: 1.6;
+    }
+
+    /* 3-Pillar Deep Dive Cards (What, Why, How) */
+    .deep-dive-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .dive-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .dive-card:hover {
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+    }
+
+    .dive-card.what { border-top: 3px solid var(--cyan); }
+    .dive-card.why { border-top: 3px solid var(--amber); }
+    .dive-card.how { border-top: 3px solid var(--emerald); }
+
+    .dive-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      width: fit-content;
+      padding: 3px 8px;
+      border-radius: 5px;
+    }
+
+    .dive-card.what .dive-badge { color: var(--cyan); background: rgba(34, 211, 238, 0.1); }
+    .dive-card.why .dive-badge { color: var(--amber); background: rgba(251, 191, 36, 0.1); }
+    .dive-card.how .dive-badge { color: var(--emerald); background: rgba(52, 211, 153, 0.1); }
+
+    .dive-heading {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .dive-body {
+      font-size: 13px;
+      color: #9db0c9;
+      line-height: 1.65;
+    }
+
+    .dive-body p { margin-bottom: 10px; }
+    .dive-body p:last-child { margin-bottom: 0; }
+
+    /* Tamil Parallel Explanation Box */
+    .tamil-box {
+      background: linear-gradient(135deg, rgba(18, 23, 33, 0.7), rgba(14, 19, 29, 0.9));
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      border-left: 4px solid var(--cyan);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 24px;
+      margin-bottom: 30px;
+    }
+
+    .tamil-box-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .tamil-box-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .tamil-content {
+      font-size: 13.5px;
+      color: #c9d5e6;
+      line-height: 1.8;
+    }
+
+    .tamil-content strong.tech-term {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-weight: 600;
+    }
+
+    /* Visual Mockups & Diagrams */
+    .mockup-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 28px 0;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .mockup-bar {
+      background: var(--card-bg-2);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .mockup-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mockup-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .mockup-dot.red { background: #ef4444; }
+    .mockup-dot.yellow { background: #eab308; }
+    .mockup-dot.green { background: #22c55e; }
+
+    .mockup-content {
+      padding: 24px;
+    }
+
+    /* Math Formula Callouts */
+    .math-card {
+      background: #090c12;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 14px 0;
+      color: var(--cyan);
+      font-size: 13px;
+    }
+
+    .math-card b {
+      color: #fff;
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    /* Architecture Grid */
+    .arch-flow-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .arch-node {
+      background: var(--card-bg-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+    }
+
+    .arch-node .node-icon {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .arch-node .node-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .arch-node .node-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Checkbox items */
+    .checks-list {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card-bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+
+    .check-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 5px;
+    }
+
+    .check-badge.pass { background: rgba(52, 211, 153, 0.15); color: var(--emerald); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .check-badge.fail { background: rgba(251, 113, 133, 0.15); color: var(--rose); border: 1px solid rgba(251, 113, 133, 0.3); }
+
+    /* Tables */
+    .data-table-wrap {
+      overflow-x: auto;
+      margin: 16px 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card-bg);
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    table.data-table th {
+      background: var(--card-bg-2);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    table.data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(30, 38, 56, 0.6);
+      color: #cbd5e1;
+    }
+
+    table.data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* CLI commands block */
+    .cli-box {
+      background: #05070a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      margin: 14px 0;
+      overflow-x: auto;
+    }
+
+    .cli-box code {
+      color: var(--cyan);
+      font-size: 13px;
+    }
+
+    .cli-desc {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .layout-container {
+        grid-template-columns: 1fr;
+      }
+      aside.sidebar {
+        display: none;
+      }
+      .deep-dive-grid {
+        grid-template-columns: 1fr;
+      }
+      .arch-flow-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      header.site-header {
+        padding: 0 14px;
+      }
+      .brand-sub, .live-feed-pill {
+        display: none;
+      }
+      .arch-flow-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="site-header">
+    <div class="brand-wrap">
+      <div class="logo-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">
+          <b>BTC QUANTUM</b>
+          <span class="brand-tag">INTELLIGENCE</span>
+        </div>
+        <div class="instrument-sub">Delta Exchange India • BTCUSD Perpetual Futures Research Engine</div>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <div class="live-feed-pill font-mono">
+        <span class="pulse-dot"></span>
+        <span>DELTA INDIA LIVE</span>
+      </div>
+
+      <!-- Language Mode Switcher -->
+      <div class="lang-switcher" id="langSwitcher">
+        <button class="lang-btn active" data-mode="en" onclick="setLanguage('en')">English</button>
+        <button class="lang-btn" data-mode="ta" onclick="setLanguage('ta')">தமிழ்</button>
+        <button class="lang-btn" data-mode="dual" onclick="setLanguage('dual')">Dual / இரண்டும்</button>
+      </div>
+
+      <a href="/" class="btn-terminal font-mono">
+        <span>Launch Terminal</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      </a>
+    </div>
+  </header>
+
+  <div class="layout-container">
+    <!-- Sticky Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="docSearch" placeholder="Search features, formulas..." onkeyup="filterDocs()">
+      </div>
+
+      <div class="nav-group-title">Platform Architecture</div>
+      <ul class="nav-list" id="navList">
+        <li class="nav-item"><a href="#overview" class="active"><span class="nav-num">01</span><span>Overview & Philosophy</span></a></li>
+        <li class="nav-item"><a href="#architecture"><span class="nav-num">02</span><span>System Architecture</span></a></li>
+        <li class="nav-item"><a href="#terminal"><span class="nav-num">03</span><span>Trading Terminal & 1s Trend</span></a></li>
+        <li class="nav-item"><a href="#what-is-alpha"><span class="nav-num">04</span><span>What is Alpha (α)?</span></a></li>
+        <li class="nav-item"><a href="#strategy-sbr5"><span class="nav-num">05</span><span>ALPHA-5: SBR-5 Engine</span></a></li>
+        <li class="nav-item"><a href="#orderflow"><span class="nav-num">06</span><span>L2 Order Flow & OBI</span></a></li>
+        <li class="nav-item"><a href="#ai-predictions"><span class="nav-num">07</span><span>Statistical AI Predictions</span></a></li>
+        <li class="nav-item"><a href="#quality-checks"><span class="nav-num">08</span><span>5-Check Setup Grading</span></a></li>
+        <li class="nav-item"><a href="#cost-accounting"><span class="nav-num">09</span><span>Realistic Cost Accounting</span></a></li>
+        <li class="nav-item"><a href="#paper-trading"><span class="nav-num">10</span><span>Live Paper Trading</span></a></li>
+        <li class="nav-item"><a href="#strategy-lab"><span class="nav-num">11</span><span>Quantitative Strategy Lab</span></a></li>
+        <li class="nav-item"><a href="#backtesting"><span class="nav-num">12</span><span>Historical Backtesting</span></a></li>
+        <li class="nav-item"><a href="#risk-governance"><span class="nav-num">13</span><span>Risk Center & Kill Switches</span></a></li>
+        <li class="nav-item"><a href="#cli-operations"><span class="nav-num">14</span><span>CLI & Docker Operations</span></a></li>
+        <li class="nav-item"><a href="#tamil-glossary"><span class="nav-num">15</span><span>Tamil Trading Glossary</span></a></li>
+      </ul>
+
+      <div class="sidebar-callout">
+        <strong>⚠️ Non-Execution Guardrail:</strong><br>
+        This platform runs paper trading and quantitative research only. No private API keys or real money order executions exist.
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-area" id="mainContent">
+
+      <!-- Hero Header -->
+      <section class="hero-banner" id="overview">
+        <div class="hero-badge">Institutional Quantitative Engineering</div>
+        <h1 class="hero-title">
+          BTC QUANTUM INTELLIGENCE<br>
+          <span class="grad">Full Technical & Operational Architecture</span>
+        </h1>
+        <p class="hero-desc">
+          An institutional-grade research terminal and simulation dashboard engineered specifically for 
+          <strong>Delta Exchange India BTCUSD Perpetual Futures</strong>. Designed with strict mathematical friction models, 
+          real-time market data ingestion (REST + WebSocket), deterministic liquidity sweep algorithms, walk-forward statistical AI forecasting, 
+          and zero-compromise risk governance.
+        </p>
+
+        <div class="hero-stats-grid font-mono">
+          <div class="stat-card">
+            <span class="stat-label">Market Target</span>
+            <span class="stat-val" style="color: var(--cyan)">BTCUSD Perp</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Execution Mode</span>
+            <span class="stat-val" style="color: var(--emerald)">Paper Only (Safe)</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Round-Trip Friction</span>
+            <span class="stat-val" style="color: var(--amber)">13.80 bps</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Primary Strategy</span>
+            <span class="stat-val" style="color: #60a5fa">SBR-5 Reclaim</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 1: Philosophy & Epistemic Guardrails -->
+      <section class="doc-section" id="philosophy">
+        <div class="section-header">
+          <div class="section-num">01</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Core Principles</span>
+            <h2 class="section-title">Overview, Design Philosophy & Epistemic Guardrails</h2>
+            <p class="section-subtitle">
+              Why this system was designed to prioritize cold statistical truth and realistic costs over inflated backtest numbers or fantasy profits.
+            </p>
+          </div>
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Quantitative Research Environment</h3>
+            <div class="dive-body">
+              <p>A high-performance algorithmic trading and market-making research platform connecting live to verified public market endpoints of Delta Exchange India.</p>
+              <p>It provides deterministic signal generation, live order book telemetry, paper portfolio execution, and empirical AI price prediction.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Defeating Retail Trading Fallacies</h3>
+            <div class="dive-body">
+              <p>Most retail crypto bots fail because they ignore exchange fees (0.05% + 18% GST), assume zero slippage, overfit machine learning models on future data, and hide losing streaks.</p>
+              <p>BTC Quantum Intelligence enforces institutional financial realism from the first millisecond.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">Epistemic Guardrails in Code</h3>
+            <div class="dive-body">
+              <p>1. <strong>Strict Read-Only Mode</strong>: Absolutely no private API keys or withdrawal access in the code.</p>
+              <p>2. <strong>Conservative Costing</strong>: Every trade immediately accounts for 13.80 bps friction.</p>
+              <p>3. <strong>Anti-Fabrication Guard</strong>: AI models that fail held-out calibration have their predictions withheld rather than showing synthetic probabilities.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              <span>தமிழ் விளக்கம் — திட்டம் மற்றும் கொள்கை (Project Overview & Philosophy)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">BILINGUAL EXPLANATION</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>BTC QUANTUM INTELLIGENCE</strong> என்பது <strong class="tech-term">Delta Exchange India</strong>-வின் <strong class="tech-term">BTCUSD Perpetual Futures</strong> சந்தைக்கான ஒரு மேம்பட்ட <strong class="tech-term">Quantitative Trading Research</strong> தளம் ஆகும்.</p>
+            <p><strong>ஏன் உருவாக்கப்பட்டது (Why):</strong> பெரும்பாலான சாதாரண <strong class="tech-term">Trading Bots</strong> சந்தையில் நஷ்டமடைவதற்கு முக்கியக் காரணம் அவை பரிவர்த்தனை கட்டணங்களான <strong class="tech-term">Taker Fee (0.05%)</strong>, இந்திய அரசின் <strong class="tech-term">18% GST</strong> மற்றும் <strong class="tech-term">Execution Slippage</strong> ஆகிய செலவுகளைக் கணக்கில் கொள்வதில்லை. மேலும் எதிர்காலத் தரவுகளைக் கொண்டு <strong class="tech-term">Overfitting</strong> செய்து போலி லாபத்தைக் காட்டும். இந்த தவறுகளை முற்றிலும் தவிர்க்க, முழுமையான கணித உண்மை மற்றும் கண்டிப்பான <strong class="tech-term">Risk Management</strong> விதிகளுடன் இது உருவாக்கப்பட்டது.</p>
+            <p><strong>எப்படி செயல்படுகிறது (How):</strong> இத்தளம் <strong class="tech-term">Read-Only Mode</strong>-ல் இயங்குகிறது. இதில் உங்கள் அசல் பணத்திற்கான <strong class="tech-term">API Secret Keys</strong> தேவையில்லை. நேரடி சந்தை விலைகளை <strong class="tech-term">REST API</strong> மற்றும் <strong class="tech-term">WebSocket</strong> வழியாக பெற்று, கணினியில் <strong class="tech-term">Paper Trading (Virtual Portfolio)</strong> முறையில் பரிசோதிக்கிறது.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: Technical Architecture -->
+      <section class="doc-section" id="architecture">
+        <div class="section-header">
+          <div class="section-num">02</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Full-Stack Blueprint</span>
+            <h2 class="section-title">System Architecture & Real-Time Data Pipeline</h2>
+            <p class="section-subtitle">
+              How FastAPI, WebSockets, Next.js 16, and SQLite WAL cooperate with sub-second latency and zero race conditions.
+            </p>
+          </div>
+        </div>
+
+        <div class="arch-flow-grid font-mono">
+          <div class="arch-node">
+            <div class="node-icon">📡</div>
+            <div class="node-title">Delta India Feeds</div>
+            <div class="node-sub">REST & WSS Streams (1s Ticks, L2 Depth)</div>
+          </div>
+          <div class="arch-node" style="border-color: rgba(34, 211, 238, 0.4);">
+            <div class="node-icon">⚡</div>
+            <div class="node-title">FastAPI Backend</div>
+            <div class="node-sub">Python 3.12 • Decision Engine • ML Pipelines</div>
+          </div>
+          <div class="arch-node" style="border-color: rgba(52, 211, 153, 0.4);">
+            <div class="node-icon">💾</div>
+            <div class="node-title">SQLite WAL Mode</div>
+            <div class="node-sub">Persistent Trades, Signals, Risk Ledger</div>
+          </div>
+          <div class="arch-node" style="border-color: rgba(192, 132, 252, 0.4);">
+            <div class="node-icon">💻</div>
+            <div class="node-title">Next.js 16 Terminal</div>
+            <div class="node-sub">React 19 • Lightweight Charts • Tailwind</div>
+          </div>
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Modular Event-Driven Architecture</h3>
+            <div class="dive-body">
+              <p>A decoupled multi-process architecture featuring a Python 3.12 FastAPI backend running asynchronous market daemons, connected to a Next.js 16 React frontend via persistent WebSockets and HTTP REST polling.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Isolation of Concerns</h3>
+            <div class="dive-body">
+              <p>Heavy quantitative calculations, ML model retraining, and WebSocket tick ingestion must never block the charting UI or delay paper position stop-loss monitoring.</p>
+              <p>SQLite Write-Ahead Logging (WAL) guarantees non-blocking concurrent reads and writes.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">Data Flow Pipeline</h3>
+            <div class="dive-body">
+              <p>1. <code>DeltaMarketDataService</code> opens persistent WebSocket to <code>public-socket.india.delta.exchange</code>.</p>
+              <p>2. Ticks update the active forming candle in real-time and calculate rolling EMAs and RSI.</p>
+              <p>3. Completed 5m candles trigger <code>Alpha5SBR5</code> and <code>StatisticalAIPredictionEngine</code>.</p>
+              <p>4. State broadcasts to Next.js dashboard clients in sub-10ms intervals.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              <span>தமிழ் விளக்கம் — தொழில்நுட்ப கட்டமைப்பு (System Architecture)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">ARCHITECTURE PIPELINE</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>கட்டமைப்பு (Architecture):</strong> இத்தளம் இரண்டு முக்கிய பகுதிகளைக் கொண்டது:</p>
+            <p>1. <strong class="tech-term">Backend (FastAPI & Python 3.12)</strong>: Delta Exchange India-விலிருந்து நொடிக்கு நொடி வரும் <strong class="tech-term">Price Ticks</strong> மற்றும் <strong class="tech-term">Order Book</strong> விவரங்களை <strong class="tech-term">WebSocket</strong> வழியாகப் பெற்று தரவுகளை அலசுகிறது. <strong class="tech-term">SBR-5 Strategy</strong>, <strong class="tech-term">Machine Learning</strong> மாடல்கள் மற்றும் <strong class="tech-term">Risk Governor</strong> ஆகியவற்றை இயக்குகிறது.</p>
+            <p>2. <strong class="tech-term">Frontend (Next.js 16, React 19 & Tailwind CSS)</strong>: வணிகர்கள் (Traders) பார்க்கும் வசதியான மற்றும் வேகமான டாஷ்போர்டு. இதில் <strong class="tech-term">TradingView Lightweight Charts</strong> மூலம் 1-நொடி நேரடி விலை மாற்றங்கள் தடையின்றி காட்டப்படுகின்றன.</p>
+            <p>3. <strong class="tech-term">Database (SQLite WAL Mode)</strong>: அனைத்து <strong class="tech-term">Paper Trades</strong>, சிக்னல்கள் மற்றும் கணக்கு விவரங்களை <strong class="tech-term">Write-Ahead Logging</strong> முறையில் நொடி தாமதமின்றிப் பாதுகாப்பாக பதிவு செய்கிறது.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: Main Trading Terminal & 1s Trend -->
+      <section class="doc-section" id="terminal">
+        <div class="section-header">
+          <div class="section-num">03</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Interactive Interface</span>
+            <h2 class="section-title">Main Trading Terminal & 1-Second Trend Intelligence</h2>
+            <p class="section-subtitle">
+              High-resolution financial charting powered by TradingView Lightweight Charts with instant 1-second dynamic candle synthesis and multi-timeframe trend ribbons.
+            </p>
+          </div>
+        </div>
+
+        <!-- Terminal Interactive Visual Mockup -->
+        <div class="mockup-container">
+          <div class="mockup-bar font-mono">
+            <div class="mockup-dots">
+              <span class="mockup-dot red"></span>
+              <span class="mockup-dot yellow"></span>
+              <span class="mockup-dot green"></span>
+            </div>
+            <span>TERMINAL CANVAS • LIGHTWEIGHT CHARTS v5</span>
+            <span style="color: var(--emerald)">BTC: $77,450.0</span>
+          </div>
+          <div class="mockup-content" style="background: #090c13;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; gap: 4px; align-items: center;" class="font-mono">
+                <span style="color: var(--cyan); font-weight: 700; font-size: 11px; padding: 3px 6px; border: 1px solid rgba(34,211,238,0.3); border-radius: 4px;">BTCUSD · 5M</span>
+                <span style="background: rgba(34,211,238,0.15); color: var(--cyan); border: 1px solid var(--cyan); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">5m ●</span>
+                <span style="color: var(--text-muted); font-size: 10px; padding: 2px 6px;">15m ●</span>
+                <span style="color: var(--text-muted); font-size: 10px; padding: 2px 6px;">1h ●</span>
+                <span style="color: var(--text-muted); font-size: 10px; padding: 2px 6px;">4h ●</span>
+              </div>
+              <div class="live-feed-pill font-mono" style="background: rgba(34,211,238,0.1); color: var(--cyan); border-color: rgba(34,211,238,0.3);">
+                <span>⚡ 1s TREND: STRONG BULLISH ▲ (+0.12%) | EMA9 > EMA21 | RSI: 62.4</span>
+              </div>
+            </div>
+
+            <!-- SVG Candlestick Mockup -->
+            <div style="height: 220px; position: relative; background: radial-gradient(circle at 50% 50%, rgba(34,211,238,0.03), transparent);">
+              <svg width="100%" height="100%" viewBox="0 0 800 220" preserveAspectRatio="none">
+                <!-- Grid Lines -->
+                <line x1="0" y1="40" x2="800" y2="40" stroke="#161d2b" stroke-width="1" />
+                <line x1="0" y1="100" x2="800" y2="100" stroke="#161d2b" stroke-width="1" />
+                <line x1="0" y1="160" x2="800" y2="160" stroke="#161d2b" stroke-width="1" />
+                
+                <!-- Target Price Line (Green Dash) -->
+                <line x1="0" y1="45" x2="800" y2="45" stroke="#34d399" stroke-width="1.5" stroke-dasharray="6,4" />
+                <text x="710" y="40" fill="#34d399" font-size="10" font-family="monospace">TARGET: $77,850 (1.8R)</text>
+
+                <!-- Entry Line (Cyan Solid) -->
+                <line x1="0" y1="110" x2="800" y2="110" stroke="#22d3ee" stroke-width="1.5" />
+                <text x="710" y="105" fill="#22d3ee" font-size="10" font-family="monospace">ENTRY: $77,400</text>
+
+                <!-- Stop Loss Line (Red Dash) -->
+                <line x1="0" y1="175" x2="800" y2="175" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="6,4" />
+                <text x="710" y="170" fill="#fb7185" font-size="10" font-family="monospace">STOP: $77,150</text>
+
+                <!-- EMA 9 Line (Blue) -->
+                <path d="M0,170 Q200,150 400,120 T800,85" fill="none" stroke="#60a5fa" stroke-width="2" />
+                <!-- EMA 21 Line (Amber) -->
+                <path d="M0,180 Q200,165 400,140 T800,115" fill="none" stroke="#fbbf24" stroke-width="2" />
+
+                <!-- Candlesticks -->
+                <g stroke-width="2">
+                  <!-- Red Bar 1 -->
+                  <line x1="120" y1="130" x2="120" y2="190" stroke="#fb7185" />
+                  <rect x="112" y="145" width="16" height="35" fill="#fb7185" />
+
+                  <!-- Red Bar 2 (Liquidity Sweep Wick) -->
+                  <line x1="220" y1="140" x2="220" y2="210" stroke="#fb7185" />
+                  <rect x="212" y="155" width="16" height="30" fill="#fb7185" />
+                  <!-- Liquidity Sweep Marker -->
+                  <circle cx="220" cy="210" r="4" fill="#fb7185" />
+                  <text x="230" y="210" fill="#fb7185" font-size="9" font-family="monospace">SWEEP WICK</text>
+
+                  <!-- Green Bar 3 (Reclaim Bar) -->
+                  <line x1="320" y1="130" x2="320" y2="185" stroke="#34d399" />
+                  <rect x="312" y="135" width="16" height="40" fill="#34d399" />
+                  <text x="310" y="125" fill="#34d399" font-size="9" font-family="monospace">RECLAIM CLOSE</text>
+
+                  <!-- Green Bar 4 -->
+                  <line x1="420" y1="100" x2="420" y2="155" stroke="#34d399" />
+                  <rect x="412" y="110" width="16" height="35" fill="#34d399" />
+
+                  <!-- Green Bar 5 -->
+                  <line x1="520" y1="80" x2="520" y2="135" stroke="#34d399" />
+                  <rect x="512" y="90" width="16" height="35" fill="#34d399" />
+
+                  <!-- Active Forming Bar (Pulsing 1s) -->
+                  <line x1="620" y1="65" x2="620" y2="115" stroke="#22d3ee" stroke-width="2" />
+                  <rect x="612" y="70" width="16" height="35" fill="#22d3ee" opacity="0.8" />
+                  <text x="610" y="55" fill="#22d3ee" font-size="9" font-family="monospace">LIVE 1s BAR</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Sub-Second Candlestick Engine</h3>
+            <div class="dive-body">
+              <p>An institutional charting canvas supporting 8 native candle resolutions (<code>1m</code>, <code>3m</code>, <code>5m</code>, <code>15m</code>, <code>30m</code>, <code>1h</code>, <code>4h</code>, <code>1d</code>) coupled with real-time in-flight candle progression.</p>
+              <p>Each incoming trade tick advances the active bar's high, low, close, and volume immediately without redrawing or screen flickering.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Microsecond Visual Context</h3>
+            <div class="dive-body">
+              <p>Traditional charts wait for a candle to finish before updating, leaving traders blind to aggressive order flow impulses during the candle's lifespan.</p>
+              <p>Our 1-second pulse reveals dynamic intra-candle momentum, checking if immediate price movement confirms the macro setup.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">1-Second Calculation Pipeline</h3>
+            <div class="dive-body">
+              <p>Every second, the engine evaluates:</p>
+              <p>1. Relative alignment of <strong class="badge-mono">EMA 9</strong>, <strong class="badge-mono">EMA 21</strong>, and <strong class="badge-mono">EMA 50</strong>.</p>
+              <p>2. Continuous <strong class="badge-mono">RSI 14</strong> level and slope.</p>
+              <p>3. If EMA9 > EMA21 > EMA50 and RSI > 55, classifies state as <code>STRONG BULLISH</code>.</p>
+              <p>4. Dynamic price lines for Stop Loss (1.8R), Take Profit, and Entry zone render directly on the canvas.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <span>தமிழ் விளக்கம் — டிரேடிங் டெர்மினல் & 1-வினாடி ட்ரெண்ட் (Trading Terminal & 1s Trend)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">CHART INTELLIGENCE</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>டிரேடிங் டெர்மினல் விளக்கம்:</strong> இத்தளத்தின் சார்ட் <strong class="tech-term">TradingView Lightweight Charts v5</strong> மூலம் இயங்குகிறது. இதில் 1 நிமிடம் முதல் 1 நாள் வரையிலான 8 <strong class="tech-term">Timeframes</strong> உள்ளன.</p>
+            <p><strong>1-Second Trend என்றால் என்ன:</strong> வழக்கமான சார்ட்டுகளில் ஒரு <strong class="tech-term">Candle</strong> முடிவடைந்த பின்னரே மாற்றம் தெரியும். ஆனால் இதில், ஒவ்வொரு விநாடியும் சந்தையில் நடக்கும் மாற்றங்கள் <strong class="tech-term">Dynamic 1s Bar</strong> மூலம் உடனடியாக சார்ட்டில் வரைகிறது.</p>
+            <p><strong>நன்மைகள் (Why):</strong> விலை நகரும் திசையை உடனடியாக அறிய <strong class="tech-term">EMA 9</strong>, <strong class="tech-term">EMA 21</strong>, <strong class="tech-term">EMA 50</strong> மற்றும் <strong class="tech-term">RSI 14</strong>-ஐ உடனுக்குடன் கணக்கிட்டு <span style="color: var(--emerald); font-weight: bold;">STRONG BULLISH ▲</span> அல்லது <span style="color: var(--rose); font-weight: bold;">STRONG BEARISH ▼</span> என்ற பேட்ஜை திரையில் ஒளிர விடுகிறது. இது தவறான அவசர முடிவுகளைத் தடுக்க உதவும் சிறந்த <strong class="tech-term">Visual Context</strong> ஆகும்.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: What is Alpha (α)? -->
+      <section class="doc-section" id="what-is-alpha">
+        <div class="section-header">
+          <div class="section-num">04</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Quantitative Finance Fundamentals</span>
+            <h2 class="section-title">What is Alpha (&alpha;)? The Mathematical Edge</h2>
+            <p class="section-subtitle">
+              Demystifying Alpha (&alpha;) versus Beta (&beta;) in institutional quantitative trading, and why strategies in this platform carry the "ALPHA-" prefix.
+            </p>
+          </div>
+        </div>
+
+        <div class="math-card font-mono">
+          <b>Mathematical Definition of Alpha (Jensen's Alpha / CAPM):</b>
+          R_portfolio - R_riskfree = &alpha; + &beta; * (R_benchmark - R_riskfree) + &epsilon;<br><br>
+          &bull; <b>Beta (&beta;)</b>: Market Drift / Exposure. If Bitcoin rises 10% and you gain 10%, that is Beta, NOT skill.<br>
+          &bull; <b>Alpha (&alpha;)</b>: Pure active mathematical edge / uncorrelated excess return independent of general market direction.<br>
+          &bull; <b>Net Alpha</b>: &alpha;_{gross} - [Taker Fees + Indian GST (11.80 bps) + Slippage (2.00 bps)] &gt; 0
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">The Definition of Alpha</h3>
+            <div class="dive-body">
+              <p>In quantitative finance, <strong>Alpha (&alpha;)</strong> represents an investment strategy's ability to beat the general market benchmark on a risk-adjusted basis through superior information, statistical modeling, or structural market edge.</p>
+              <p>It is the value added by active strategy rules beyond passive market holding.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Beta vs Alpha Distinction</h3>
+            <div class="dive-body">
+              <p>Most retail traders mistake a rising bull market (Beta) for trading skill. When the market reverses or trades sideways, their profits vanish.</p>
+              <p>A true quantitative platform builds mathematical <strong>Alphas</strong> designed to extract edge whether Bitcoin is pumping, dumping, or stuck in a chop range.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">The Alpha Family in BTC Quantum</h3>
+            <div class="dive-body">
+              <p>Our platform separates quantitative edge into 5 distinct Alpha modules:</p>
+              <p>1. <strong>ALPHA-5</strong>: Structural Alpha from 2-hour liquidity sweep reclaims.</p>
+              <p>2. <strong>ALPHA-1R</strong>: Microstructure Alpha from L2 order-flow depth imbalance.</p>
+              <p>3. <strong>ALPHA-2R</strong>: Regime Alpha from volatility compression breakouts.</p>
+              <p>4. <strong>ALPHA-3R</strong>: Arbitrage Alpha from perp-spot basis spread.</p>
+              <p>5. <strong>ALPHA-4R</strong>: Protective Alpha preventing severe market dislocation.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+              <span>தமிழ் விளக்கம் — ஆல்ஃபா (Alpha - &alpha;) என்றால் என்ன? (What is Alpha?)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">QUANTITATIVE EDGE</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>ஆல்ஃபா (Alpha - &alpha;) என்றால் என்ன:</strong> நிதிச் சந்தையிலும் (<strong class="tech-term">Financial Markets</strong>) மற்றும் <strong class="tech-term">Quantitative Trading</strong>-லும், சந்தையின் பொதுவான போக்கை விட நமது உத்தி மூலம் நாம் கூடுதலாக பெறும் தனித்துவமான லாபத்தை (<strong class="tech-term">Excess Return / Edge</strong>) குறிக்கும் சொல்லே <strong class="tech-term">Alpha</strong> ஆகும்.</p>
+            
+            <p><strong>Beta (&beta;) vs Alpha (&alpha;) வேறுபாடு:</strong></p>
+            <p>&bull; <strong class="tech-term">Beta (&beta;) — சந்தை ஓட்டம்:</strong> பிட்காயின் 10% ஏறும் போது உங்கள் கணக்கும் 10% உயர்ந்தால், அது சந்தை ஏற்றத்தால் கிடைத்ததே தவிர உங்களின் தனித்திறமையால் அல்ல. சந்தை 20% சரியும்போது உங்கள் கணக்கும் 20% நஷ்டமடையும்.</p>
+            <p>&bull; <strong class="tech-term">Alpha (&alpha;) — உண்மையான கணிதத் திறன்:</strong> பிட்காயின் சரிந்தாலும் அல்லது பக்கவாட்டில் (<strong class="tech-term">Sideways / Chop</strong>) நகர்ந்தாலும், உங்களின் கணித அல்காரிதம் மற்றும் ரிஸ்க் மேலாண்மை மூலம் லாபம் ஈட்டுவதே உண்மையான <strong class="tech-term">Alpha</strong> ஆகும்.</p>
+
+            <p><strong>இந்த திட்டத்தில் உள்ள உத்திகளுக்கு ஏன் "ALPHA" என்று பெயர் வைக்கப்பட்டுள்ளது:</strong></p>
+            <p>1. <strong class="tech-term">ALPHA-5 (SBR-5 Sweep & Reclaim)</strong>: பெரிய திமிங்கலங்கள் சில்லறை வணிகர்களின் ஸ்டாப் லாஸ்களை வேட்டையாடும் போது, அந்த நீர்மைப் பகுதியை (<strong class="tech-term">Liquidity Pool</strong>) பயன்படுத்தி லாபம் ஈட்டும் முதன்மை ஆல்ஃபா.</p>
+            <p>2. <strong class="tech-term">ALPHA-1R (Order Flow)</strong>: ஆர்டர் புத்தகத்தில் வாங்குபவர்கள்/விற்பவர்களின் பலத்தை (<strong class="tech-term">Order Book Imbalance</strong>) முன்கூட்டியே அறியும் நுண் கட்டமைப்பு ஆல்ஃபா.</p>
+            <p>3. <strong class="tech-term">ALPHA-2R (Volatility Breakout)</strong>: மார்க்கெட் அதிக அமைதிக்குப் பின் திடீரென வெடித்துக் கிளம்பும் நிலையை கண்டறியும் ஆல்ஃபா.</p>
+            <p>4. <strong class="tech-term">ALPHA-3R (Basis)</strong>: ஸ்பாட் மற்றும் பியூச்சர்ஸ் விலைகளுக்கு இடையிலான இடைவெளி சீரமைப்பை பயன்படுத்தும் ஆல்ஃபா.</p>
+            <p>5. <strong class="tech-term">ALPHA-4R (Dislocation Guard)</strong>: அசாதாரண சந்தை விபத்துக்களில் இருந்து பணத்தை பாதுகாக்கும் ஆல்ஃபா.</p>
+            
+            <p><strong>Net Alpha-வின் முக்கியத்துவம்:</strong> இந்தியாவில் எக்ஸ்சேஞ்ச் கட்டணம் மற்றும் ஜி.எஸ்.டி (13.80 bps) கழித்த பிறகும் உங்கள் கணக்கில் லாபம் இருந்தால் மட்டுமே அது உண்மையான <strong class="tech-term">Net Alpha</strong> ஆகும். இந்த தளம் அந்த <strong class="tech-term">Net Alpha</strong>-வை மட்டுமே இலக்காகக் கொண்டுள்ளது!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: ALPHA-5: SBR-5 Sweep and Reclaim Engine -->
+      <section class="doc-section" id="strategy-sbr5">
+        <div class="section-header">
+          <div class="section-num">05</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Primary Quantitative Algorithm</span>
+            <h2 class="section-title">ALPHA-5: SBR-5 Sweep & Reclaim Engine</h2>
+            <p class="section-subtitle">
+              The flagship deterministic trading strategy operating on completed 5-minute candles to exploit liquidity sweeps outside recent market ranges.
+            </p>
+          </div>
+        </div>
+
+        <div class="math-card font-mono">
+          <b>Mathematical Formulation (SBR-5 Long Execution Rules):</b>
+          1. Range Boundary: L_24 = min(Low_{t-24} ... Low_{t-1}), &nbsp; H_24 = max(High_{t-24} ... High_{t-1})<br>
+          2. Sweep Gate: Low_t &lt; L_24 - max($0.50, 0.12 * ATR_14)<br>
+          3. Reclaim Gate: L_24 + 0.10 * ATR_14 &lt; Close_t &lt; L_24 + 1.20 * ATR_14<br>
+          4. Volume Impulse: Volume_t &ge; 1.25 * mean(Volume_{t-24} ... Volume_{t-1})<br>
+          5. Stop Loss: Stop = Low_t - 0.10 * ATR_14, &nbsp; clamped to [0.15%, 0.80%] of Entry<br>
+          6. Profit Target: Target = Entry + 1.80 * (Entry - Stop)<br>
+          7. Time Stop: Strictly 5 bars (25 minutes maximum holding time)
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Institutional Liquidity Reclaim</h3>
+            <div class="dive-body">
+              <p>A systematic mean-reversion algorithm that identifies false breakdowns and false breakouts around the 2-hour (24-bar) high and low boundaries.</p>
+              <p>It exploits stops run by market makers followed by immediate order flow absorption.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Edge in Stop Runs</h3>
+            <div class="dive-body">
+              <p>Retail traders consistently place obvious stop losses right below key support levels. Institutional liquidity seekers sweep these resting stops to fill large orders, then push price back into value.</p>
+              <p>SBR-5 waits for proof of reclaim before entering.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">Deterministic Qualification Steps</h3>
+            <div class="dive-body">
+              <p>1. Only finalized 5m candles are evaluated — never active in-flight candles.</p>
+              <p>2. Volume must exceed the 24-period moving average by at least 25% (1.25x).</p>
+              <p>3. Dynamic stop loss is anchored to the sweep candle wick minus an ATR buffer.</p>
+              <p>4. Execution takes place at the open of the following candle plus modeled taker slippage.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              <span>தமிழ் விளக்கம் — ALPHA-5: SBR-5 அல்காரிதம் (SBR-5 Engine)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">QUANTITATIVE STRATEGY</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>SBR-5 உத்தியின் விளக்கம் (Sweep & Reclaim):</strong> இது கிரிப்டோ சந்தையில் பெரிய நிறுவனங்கள் (<strong class="tech-term">Institutional Market Makers</strong>) ஏற்படுத்தும் போலி பிரேக்அவுட்களை (<strong class="tech-term">Fake Breakouts / Stop Hunts</strong>) கண்டறிந்து லாபம் ஈட்டும் ஒரு கணித உத்தி.</p>
+            <p>1. <strong class="tech-term">Range Lookback (24 Bars)</strong>: கடந்த 2 மணி நேரத்தின் (24 ஐந்து நிமிட கேண்டில்கள்) மிகக் குறைந்த விலை (<strong class="tech-term">Lowest Low - L24</strong>) மற்றும் அதிக விலையைக் கணக்கிடும்.</p>
+            <p>2. <strong class="tech-term">Liquidity Sweep</strong>: சில்லறை வணிகர்களின் <strong class="tech-term">Stop Loss</strong> ஆர்டர்களை வேட்டையாட விலை திடீரென L24-க்கு கீழே இறங்கும் (<strong class="tech-term">Wick Sweep</strong>).</p>
+            <p>3. <strong class="tech-term">Reclaim Window</strong>: விலை கீழே நிற்காமல், மீண்டும் அதே கேண்டிலில் அந்த எல்லைக்கு மேலே ஏறி முடிவடையும் (<strong class="tech-term">Close Reclaim</strong>).</p>
+            <p>4. <strong class="tech-term">Volume Spike</strong>: அப்போதைய கேண்டிலின் வர்த்தக அளவு சராசரியை விட 1.25 மடங்கு அதிகமாக இருக்க வேண்டும்.</p>
+            <p>5. <strong class="tech-term">Stop Loss & Target</strong>: ஸ்டாப் லாஸ் அந்த கேண்டிலின் கீழ் நுனியில் (<strong class="tech-term">Low Wick</strong>) வைக்கப்படும்; டார்கெட் 1.8 மடங்கு ரிவார்டு (<strong class="tech-term">1.80 R-Multiple</strong>) ஆக நிர்ணயிக்கப்படும். 25 நிமிடங்களுக்குள் (5 கேண்டில்கள்) முடிவு எட்டப்படாவிட்டால் பொசிஷன் தானாக மூடப்படும் (<strong class="tech-term">Time-based Exit</strong>).</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 6: Order Flow & L2 Microstructure -->
+      <section class="doc-section" id="orderflow">
+        <div class="section-header">
+          <div class="section-num">06</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Market Microstructure</span>
+            <h2 class="section-title">Order Flow Intelligence & L2 Depth Microstructure</h2>
+            <p class="section-subtitle">
+              Top-15 limit order book analysis, Order Book Imbalance (OBI), Trade Flow Imbalance (TFI), and Micro-Price telemetry.
+            </p>
+          </div>
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Sub-Tick Depth Analytics</h3>
+            <div class="dive-body">
+              <p>Real-time reconstruction of Delta Exchange India's Top-15 resting bid and ask levels, computing volume depth asymmetry, aggressive market taker flow, and volume-weighted micro-price deviation.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Adverse Selection Protection</h3>
+            <div class="dive-body">
+              <p>Crypto markets are plagued by spoofing, ghost quotes, and instant cancellations. Passive limit orders suffer adverse selection if placed into aggressive opposing momentum.</p>
+              <p>Our order flow layer acts as a strict verification filter.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">Microstructure Formulas</h3>
+            <div class="dive-body">
+              <p>1. <strong>OBI (Order Book Imbalance)</strong>:<br>
+                 <code>(Bid_Depth - Ask_Depth) / (Bid_Depth + Ask_Depth)</code></p>
+              <p>2. <strong>TFI (Trade Flow Imbalance)</strong>:<br>
+                 <code>(Aggressive_Buy_Vol - Aggressive_Sell_Vol) / Total_Vol</code></p>
+              <p>3. <strong>Micro-Price</strong>: Volume-weighted fair value midpoint between bid and ask.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <span>தமிழ் விளக்கம் — ஆர்டர் ஃப்ளோ மற்றும் ஆர்டர் புக் (Order Flow & L2 Depth)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">MICROSTRUCTURE EXPLANATION</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>ஆர்டர் ஃப்ளோ என்றால் என்ன:</strong> வெறும் கேண்டில் சார்ட்டை மட்டும் பார்க்காமல், சந்தையில் வாங்குபவர்கள் (<strong class="tech-term">Bids</strong>) மற்றும் விற்பவர்களின் (<strong class="tech-term">Asks</strong>) நிஜமான ஆர்டர் புத்தகத்தை (<strong class="tech-term">Order Book Depth</strong>) 15 நிலைகள் வரை நேரலையாக ஆய்வு செய்யும் தொழில்நுட்பம் இதுவாகும்.</p>
+            <p>1. <strong class="tech-term">Order Book Imbalance (OBI)</strong>: வாங்குபவர்களின் ஆர்டர் அளவு அதிகமா அல்லது விற்பவர்களின் அளவு அதிகமா என்ற சமநிலையின்மையைக் கணக்கிடுகிறது.</p>
+            <p>2. <strong class="tech-term">Trade Flow Imbalance (TFI)</strong>: உடனடி மார்க்கெட் ஆர்டர்கள் (<strong class="tech-term">Aggressive Market Orders</strong>) எந்தப் பக்கத்தில் தீவிரமாக நுழைகின்றன என்பதை அளவிடுகிறது.</p>
+            <p>3. <strong class="tech-term">Adverse Selection Guard</strong>: பெரிய திமிங்கலங்கள் போலியான ஆர்டர்களை (<strong class="tech-term">Spoofing</strong>) வைத்து ஏமாற்ற முயன்றால், இந்த சிஸ்டம் சிக்னலை ரத்து செய்து நமது மூலதனத்தைப் பாதுகாக்கும்.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 7: Statistical AI Price Predictions -->
+      <section class="doc-section" id="ai-predictions">
+        <div class="section-header">
+          <div class="section-num">07</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Machine Learning Rigor</span>
+            <h2 class="section-title">Statistical AI Price Prediction Engine</h2>
+            <p class="section-subtitle">
+              Purged walk-forward classification across 5m, 15m, 30m, and 1h horizons with Brier score calibration and anti-fabrication gates.
+            </p>
+          </div>
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Directional Classifier Ensemble</h3>
+            <div class="dive-body">
+              <p>A statistical learning engine combining standardized Logistic Regression and Histogram-based Gradient Boosting Classifiers (<code>HistGradientBoostingClassifier</code>) to forecast price direction.</p>
+              <p>Forecasts directional probability across 5-min, 15-min, 30-min, and 1-hour windows.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Eliminating Data Leakage</h3>
+            <div class="dive-body">
+              <p>Standard machine learning tutorials use random train-test splits, which leak future price information into past predictions (Look-Ahead Bias).</p>
+              <p>BTC Quantum Intelligence uses strict chronological Purged Walk-Forward splits with horizon-sized gap buffers.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">Brier Score Calibration Gate</h3>
+            <div class="dive-body">
+              <p>1. Predictions undergo Sigmoidal Calibration via <code>CalibratedClassifierCV</code>.</p>
+              <p>2. The model's Brier Score must prove statistically superior to the historical class-frequency baseline.</p>
+              <p>3. <strong>Anti-Fabrication Notice</strong>: If a horizon fails calibration, it displays <code>PREDICTION UNAVAILABLE — MODEL NOT VALIDATED</code> rather than fabricating random percentages.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4c0 .73-.2 1.41-.54 2H18a4 4 0 0 1 4 4c0 1.2-.53 2.27-1.37 3A4 4 0 0 1 18 21H6a4 4 0 0 1-2.63-6c-.84-.73-1.37-1.8-1.37-3a4 4 0 0 1 4-4h2.54A4 4 0 0 1 12 2z"></path></svg>
+              <span>தமிழ் விளக்கம் — AI முன்கணிப்பு எஞ்சின் (Statistical AI Predictions)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">MACHINE LEARNING RIGOR</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>செயற்கை நுண்ணறிவு முன்கணிப்பு (AI Engine):</strong> அடுத்த 5 நிமிடம், 15 நிமிடம், 30 நிமிடம் மற்றும் 1 மணி நேரத்தில் பிட்காயின் விலை எந்தத் திசையில் செல்லும் என்பதை <strong class="tech-term">Machine Learning</strong> அல்காரிதம்கள் (<strong class="tech-term">Logistic Regression & Gradient Boosting</strong>) மூலம் கணிக்கிறது.</p>
+            <p><strong>உண்மைத்தன்மை உறுதிமொழி (Anti-Fabrication Guard):</strong> சந்தையில் பல செயலிகள் போலியான கணிப்புகளைக் காட்டும். ஆனால் இதில் <strong class="tech-term">Walk-Forward Validation</strong> மற்றும் <strong class="tech-term">Brier Score Calibration</strong> சோதிக்கப்படுகிறது. கணிப்பின் துல்லியம் கணித ரீதியாக நிரூபிக்கப்படாவிட்டால், திரையில் தவறான எண்களைக் காட்டாமல் <span style="color: var(--amber); font-weight: bold;">PREDICTION UNAVAILABLE — MODEL NOT VALIDATED</span> என்று வெளிப்படையாக அறிவித்துவிடும்!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 8: 5-Check Setup Grading -->
+      <section class="doc-section" id="quality-checks">
+        <div class="section-header">
+          <div class="section-num">08</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Quality Confluence</span>
+            <h2 class="section-title">The Five-Check Trade Setup Grading System</h2>
+            <p class="section-subtitle">
+              Every single signal must pass five independent structural filters before being considered for automated paper execution.
+            </p>
+          </div>
+        </div>
+
+        <div class="checks-list font-mono">
+          <div class="check-row">
+            <span class="check-badge pass">CHECK 1</span>
+            <div style="flex:1;">
+              <strong style="color:#fff;">Completed SBR-5 Setup Active</strong>
+              <div style="font-size:11px; color:var(--text-muted);">Finalized 5-minute bar closed within the ATR reclaim corridor with confirmed volume expansion.</div>
+            </div>
+          </div>
+          <div class="check-row">
+            <span class="check-badge pass">CHECK 2</span>
+            <div style="flex:1;">
+              <strong style="color:#fff;">Fresh & Safe Market Feed</strong>
+              <div style="font-size:11px; color:var(--text-muted);">Data age under 10 minutes, WebSocket status LIVE, exchange operational, no dislocation halts active.</div>
+            </div>
+          </div>
+          <div class="check-row">
+            <span class="check-badge pass">CHECK 3</span>
+            <div style="flex:1;">
+              <strong style="color:#fff;">Spread At Most 2.0 bps</strong>
+              <div style="font-size:11px; color:var(--text-muted);">Tight top-of-book bid/ask spread prevents market takers from being immediately penalized by wide quotes.</div>
+            </div>
+          </div>
+          <div class="check-row">
+            <span class="check-badge pass">CHECK 4</span>
+            <div style="flex:1;">
+              <strong style="color:#fff;">Net Target Reward/Risk &ge; 1.20 R</strong>
+              <div style="font-size:11px; color:var(--text-muted);">Target reward strictly covers the 13.80 bps round-trip taker friction and provides sufficient risk asymmetry.</div>
+            </div>
+          </div>
+          <div class="check-row">
+            <span class="check-badge pass">CHECK 5</span>
+            <div style="flex:1;">
+              <strong style="color:#fff;">Completed-Bar EMA 9 / EMA 21 Trend Alignment</strong>
+              <div style="font-size:11px; color:var(--text-muted);">Trend confirmation: Fast moving average cleanly aligns with trade direction on the completed signal candle.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              <span>தமிழ் விளக்கம் — ஐந்து தரச் சோதனைகள் (5-Check Quality Gate)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">QUALITY CONFLUENCE</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>ஐந்து தரச் சோதனைகள் ஏன் தேவை:</strong> ஒரு சிக்னல் வந்தவுடன் கண்மூடித்தனமாக டிரேட் செய்வதைத் தவிர்க்க, பின்வரும் 5 சோதனைகளும் ஒரே நேரத்தில் <span style="color: var(--emerald); font-weight: bold;">PASS</span> ஆனால் மட்டுமே அது <span style="color: var(--emerald); font-weight: bold;">STRONG SETUP</span> என்று அங்கீகரிக்கப்படும்:</p>
+            <p>1. <strong class="tech-term">Completed SBR-5 Setup</strong>: முழுமையாக முடிந்த கேண்டிலில் உத்தி விதிகள் சரியாக பொருந்தியிருக்க வேண்டும்.</p>
+            <p>2. <strong class="tech-term">Fresh and Safe Market</strong>: நேரடி டேட்டா இணைப்பு துண்டிக்கப்படாமல் <strong class="tech-term">LIVE</strong> நிலையில் இருக்க வேண்டும்.</p>
+            <p>3. <strong class="tech-term">Spread &le; 2 bps</strong>: வாங்கும் விலைக்கும் விற்கும் விலைக்கும் இடையிலான இடைவெளி (Spread) மிகக் குறைவாக இருக்க வேண்டும்.</p>
+            <p>4. <strong class="tech-term">Net Reward/Risk &ge; 1.2 R</strong>: கட்டணங்களைக் கழித்த பிறகும் கிடைக்கக்கூடிய லாபம் குறைந்தபட்சம் 1.2 மடங்கு அதிகமாக இருக்க வேண்டும்.</p>
+            <p>5. <strong class="tech-term">EMA Alignment</strong>: <strong class="tech-term">EMA 9</strong> மற்றும் <strong class="tech-term">EMA 21</strong> ட்ரெண்ட் திசையுடன் ஒத்துப்போக வேண்டும்.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 9: Realistic Cost Accounting -->
+      <section class="doc-section" id="cost-accounting">
+        <div class="section-header">
+          <div class="section-num">09</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Institutional Economics</span>
+            <h2 class="section-title">Realistic Friction & Cost Accounting Model</h2>
+            <p class="section-subtitle">
+              How Delta Exchange India's statutory taker fee, 18% GST, and book-walking execution slippage are modeled to guarantee cold financial realism.
+            </p>
+          </div>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table font-mono">
+            <thead>
+              <tr>
+                <th>Cost Component</th>
+                <th>Standard Rate</th>
+                <th>With Indian GST (18%)</th>
+                <th>Round-Trip Impact</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Exchange Taker Fee</strong></td>
+                <td>0.050% (5.0 bps / leg)</td>
+                <td>0.059% (5.90 bps / leg)</td>
+                <td><strong style="color:var(--amber);">11.80 bps</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Model Slippage (Per Leg)</strong></td>
+                <td>0.010% (1.0 bp / leg)</td>
+                <td>Not Taxable</td>
+                <td><strong style="color:var(--amber);">2.00 bps</strong></td>
+              </tr>
+              <tr style="background: rgba(34,211,238,0.06);">
+                <td><strong style="color:var(--cyan);">TOTAL ROUND-TRIP FRICTION</strong></td>
+                <td>—</td>
+                <td>—</td>
+                <td><strong style="color:var(--cyan); font-size: 14px;">13.80 bps of Entry Notional</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Microsecond Fee Simulation</h3>
+            <div class="dive-body">
+              <p>A precision cost accounting engine applied to every single paper trade and backtest iteration. No trade is permitted to claim a profit without first deducting exchange taker fees, statutory GST, and book-walking slippage.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">The 13.80 bps Reality</h3>
+            <div class="dive-body">
+              <p>In high-frequency crypto trading, 13.80 bps is a significant hurdle. Strategies showing paper profits on theoretical midpoints frequently bleed capital in live markets due to unaccounted trading friction.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">Net Basis Points Deduction</h3>
+            <div class="dive-body">
+              <p>When closing a position:</p>
+              <p><code>Gross Bps = Direction * ((Exit_Price - Entry_Price) / Entry_Price) * 10,000</code></p>
+              <p><code>Net Bps = Gross Bps - 13.80 bps</code></p>
+              <p><code>Net PnL ($) = Position_Notional * (Net Bps / 10,000)</code></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              <span>தமிழ் விளக்கம் — டிரேடிங் கட்டணங்கள் மற்றும் செலவுகள் (Realistic Cost Accounting)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">COST REALISM</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>13.80 bps செலவுக் கணக்கு விளக்கம்:</strong> இந்தியாவில் கிரிப்டோ டிரேடிங் செய்யும் போது ஏற்படும் உண்மையான செலவுகளை இந்த தளம் துல்லியமாகக் கணக்கிடுகிறது:</p>
+            <p>1. <strong class="tech-term">Exchange Taker Fee</strong>: ஒரு முறை வாங்குவதற்கோ விற்பதற்கோ 0.05% கட்டணம்.</p>
+            <p>2. <strong class="tech-term">18% GST</strong>: எக்ஸ்சேஞ்ச் கட்டணத்தின் மீது இந்திய அரசாங்கத்தின் 18% ஜி.எஸ்.டி (0.009%). மொத்தம் ஒரு பக்கத்திற்கு 5.9 bps, இரண்டு பக்கத்திற்கு <strong class="tech-term">11.80 bps</strong>.</p>
+            <p>3. <strong class="tech-term">Execution Slippage</strong>: சந்தை விலையில் ஏற்படும் மாறுபாடு (Round-trip 2.0 bps).</p>
+            <p>ஆக மொத்தம் ஒவ்வொரு டிரேடுக்கும் <strong class="tech-term">13.80 bps</strong> கழித்த பிறகே வரவு-செலவு கணக்கிடப்படும். இதன் மூலம் நிஜ உலகில் லாபம் தரக்கூடிய டிரேடுகள் மட்டுமே அடையாளம் காணப்படுகின்றன!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 10: Live Paper Trading -->
+      <section class="doc-section" id="paper-trading">
+        <div class="section-header">
+          <div class="section-num">10</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Zero Risk Simulation</span>
+            <h2 class="section-title">Live Paper Trading & Persistent Ledger</h2>
+            <p class="section-subtitle">
+              Simulate manual or automated orders against real-time market ticks with strict risk-bounded position sizing and SQLite WAL persistence.
+            </p>
+          </div>
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Virtual Portfolio Engine</h3>
+            <div class="dive-body">
+              <p>A full-featured simulated execution broker maintaining open positions, calculating real-time unrealized P&L, monitoring trailing stops, and persisting an auditable historical trade ledger in SQLite.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Empirical Forward Validation</h3>
+            <div class="dive-body">
+              <p>Backtests test historical hypotheses, but only forward paper trading against live, unpredictable order book ticks reveals execution latency, slippage variance, and real-time risk compliance.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">Execution Lifecycle</h3>
+            <div class="dive-body">
+              <p>1. User or automated engine triggers order via <code>/api/paper-trade/order</code>.</p>
+              <p>2. Fill occurs at executable ask (for buys) or bid (for sells) plus modeled slippage.</p>
+              <p>3. Asynchronous monitor checks every price tick against stop loss, take profit, and the 25-minute holding timer.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              <span>தமிழ் விளக்கம் — லைவ் பேப்பர் டிரேடிங் (Live Paper Trading)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">VIRTUAL BROKER</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>பேப்பர் டிரேடிங் விளக்கம்:</strong> இது நிஜ பணத்தை இழக்கும் ஆபத்து இல்லாமல், நேரடி மார்க்கெட் விலைகளில் போலி டிரேடிங் (<strong class="tech-term">Virtual Portfolio Simulation</strong>) செய்து பார்க்கும் ஒரு சிறந்த ஆய்வுக் கூடம் ஆகும்.</p>
+            <p>இதில் ஒரு கிளிக் மூலம் <strong class="tech-term">Paper Buy</strong> அல்லது <strong class="tech-term">Paper Sell</strong> செய்ய முடியும். நீங்கள் வாங்கிய விலை (<strong class="tech-term">Entry</strong>), ஸ்டாப் லாஸ் (<strong class="tech-term">Stop Loss</strong>) மற்றும் டார்கெட் (<strong class="tech-term">Take Profit</strong>) ஆகியவற்றின் நேரடி லாப-நஷ்டங்களை (<strong class="tech-term">Live Unrealized PnL</strong>) நொடிக்கு நொடி திரையில் காட்டும்.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 11: Strategy Lab -->
+      <section class="doc-section" id="strategy-lab">
+        <div class="section-header">
+          <div class="section-num">11</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Quantitative Research Lab</span>
+            <h2 class="section-title">The Strategy Family & Parameter Inspection Lab</h2>
+            <p class="section-subtitle">
+              Comprehensive telemetry inspection for all 5 research modules defined in the Stage 3 Specification.
+            </p>
+          </div>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table font-mono">
+            <thead>
+              <tr>
+                <th>Strategy Name</th>
+                <th>Underlying Hypothesis</th>
+                <th>Evaluation Status</th>
+                <th>Primary Metrics</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong style="color:var(--cyan);">ALPHA-5: SBR-5</strong></td>
+                <td>2-Hour Liquidity Sweep & Reclaim</td>
+                <td><span class="check-badge pass">ACTIVE (PRIMARY)</span></td>
+                <td>ATR 14, 24-Bar Range, 1.25x Vol</td>
+              </tr>
+              <tr>
+                <td><strong>ALPHA-1R: Order-Flow</strong></td>
+                <td>L2 Depth & Trade Flow Imbalance</td>
+                <td><span class="check-badge pass">TELEMETRY ONLY</span></td>
+                <td>OBI, TFI, Micro-Price Deviation</td>
+              </tr>
+              <tr>
+                <td><strong>ALPHA-2R: Volatility</strong></td>
+                <td>Volatility Compression Breakout (VCR)</td>
+                <td><span class="check-badge fail">RESEARCH ONLY</span></td>
+                <td>VCR Ratio, RV_6 / Median(RV_48)</td>
+              </tr>
+              <tr>
+                <td><strong>ALPHA-3R: Basis Mean Rev</strong></td>
+                <td>Perp vs Spot Basis Arbitrage</td>
+                <td><span class="check-badge fail">DISABLED</span></td>
+                <td>Ornstein-Uhlenbeck AR(1) Process</td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--rose);">ALPHA-4R: Dislocation</strong></td>
+                <td>Market Dislocation & Jump Protection</td>
+                <td><span class="check-badge pass">RISK GOVERNOR</span></td>
+                <td>Mark-to-Mid &gt; 50 bps, 5m Jump</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span>தமிழ் விளக்கம் — உத்திகள் ஆய்வகம் (Quantitative Strategy Lab)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">STRATEGY REGISTRY</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>உத்திகள் ஆய்வகத்தின் விளக்கம்:</strong> இந்த அமைப்பில் 5 தனித்துவமான கணித உத்திகள் (<strong class="tech-term">Alpha Modules</strong>) உள்ளன. அவற்றில் ஒவ்வொன்றும் எதற்காக உருவாக்கப்பட்டது என்பது வெளிப்படையாகக் காட்டப்படுகிறது:</p>
+            <p>1. <strong class="tech-term">ALPHA-5 (SBR-5)</strong>: முக்கிய வர்த்தக உத்தி (செயலில் உள்ளது).</p>
+            <p>2. <strong class="tech-term">ALPHA-1R (Order Flow)</strong>: ஆர்டர் புக் அழுத்தத்தை அளக்கும் துணை அமைப்பு.</p>
+            <p>3. <strong class="tech-term">ALPHA-2R (Volatility)</strong>: மார்க்கெட் சுருங்கி வெடிக்கும் நிலையை (<strong class="tech-term">Volatility Breakout</strong>) அறியும் ஆராய்ச்சி உத்தி.</p>
+            <p>4. <strong class="tech-term">ALPHA-3R (Basis)</strong>: ஸ்பாட் மற்றும் பியூச்சர்ஸ் விலைகளுக்கு இடையிலான இடைவெளியை ஆய்வு செய்வது.</p>
+            <p>5. <strong class="tech-term">ALPHA-4R (Dislocation)</strong>: சந்தையில் அசாதாரணமான விலை ஏற்ற இறக்கம் அல்லது பிழை ஏற்பட்டால் உடனடியாக வர்த்தகத்தை நிறுத்தும் <strong class="tech-term">Emergency Guard</strong>.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 12: Backtesting Engine -->
+      <section class="doc-section" id="backtesting">
+        <div class="section-header">
+          <div class="section-num">12</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Empirical Verification</span>
+            <h2 class="section-title">Historical Backtesting Engine</h2>
+            <p class="section-subtitle">
+              Interactive parameter calibration across completed Delta India candles with trade-by-trade ledger analysis and drawdown profiling.
+            </p>
+          </div>
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Cost-Sensitive Backtester</h3>
+            <div class="dive-body">
+              <p>A deterministic backtesting engine executing against historical completed 5m OHLCV candles, generating Win Rate, Profit Factor, Expectancy, and Maximum Drawdown metrics.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Robustness Over Curve-Fitting</h3>
+            <div class="dive-body">
+              <p>To prevent parameter curve-fitting, the engine exposes all key levers (lookback, ATR buffers, volume multipliers) allowing traders to stress-test strategy resilience across diverse market regimes.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">Tick & Bar Traversal</h3>
+            <div class="dive-body">
+              <p>1. Iterates chronologically through historical bars without lookahead.</p>
+              <p>2. Enforces next-bar open fills plus modeled taker slippage.</p>
+              <p>3. Deducts 11.80 bps fee + GST and 2.0 bps slippage per trade.</p>
+              <p>4. Blocks trades colliding with the 8-hour perpetual funding snapshot window.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+              <span>தமிழ் விளக்கம் — வரலாற்று பேக்டெஸ்டிங் (Historical Backtesting)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">EMPIRICAL BACKTEST</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>Backtesting விளக்கம்:</strong> கடந்த கால வரலாற்று மெழுகுவர்த்தி தரவுகளில் (<strong class="tech-term">Historical Candles</strong>) இந்த உத்தியைப் பயன்படுத்தியிருந்தால் என்ன நடந்திருக்கும் என்பதை முழுமையாக பரிசோதிக்கும் கருவி இது.</p>
+            <p>இதில் வெறும் லாபத்தை மட்டும் பார்க்காமல், அதிகபட்ச நஷ்டம் (<strong class="tech-term">Maximum Drawdown</strong>), வெற்றி விகிதம் (<strong class="tech-term">Win Rate</strong>) மற்றும் <strong class="tech-term">Profit Factor</strong> ஆகியவற்றை அனைத்து கட்டணங்களும் போக துல்லியமாக கணக்கிட்டு விளக்குகிறது.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 13: Risk Center & Kill Switches -->
+      <section class="doc-section" id="risk-governance">
+        <div class="section-header">
+          <div class="section-num">13</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Capital Preservation</span>
+            <h2 class="section-title">Risk Center, Position Sizer & Emergency Kill Switches</h2>
+            <p class="section-subtitle">
+              Institutional safety gates engineered to enforce capital protection: Daily loss halts, losing streak cooldowns, and funding window blocks.
+            </p>
+          </div>
+        </div>
+
+        <div class="deep-dive-grid">
+          <div class="dive-card what">
+            <div class="dive-badge">What is it?</div>
+            <h3 class="dive-heading">Automated Risk Governor</h3>
+            <div class="dive-body">
+              <p>A multi-tiered safety system that overrides all trading signals whenever capital limits, volatility spikes, or operational anomalies are detected.</p>
+            </div>
+          </div>
+
+          <div class="dive-card why">
+            <div class="dive-badge">Why was it built?</div>
+            <h3 class="dive-heading">Survival is Priority Zero</h3>
+            <div class="dive-body">
+              <p>In quantitative trading, a streak of bad trades or unexpected exchange outages can blow up an account in hours. Hard-coded circuit breakers protect the account balance unconditionally.</p>
+            </div>
+          </div>
+
+          <div class="dive-card how">
+            <div class="dive-badge">How does it work?</div>
+            <h3 class="dive-heading">Four Hard Kill Switches</h3>
+            <div class="dive-body">
+              <p>1. <strong>1.0% Daily Loss Limit</strong>: Trading halts until UTC midnight if daily loss exceeds 1%.</p>
+              <p>2. <strong>5.0% Peak Drawdown</strong>: Total platform shutdown if equity drops 5% below peak.</p>
+              <p>3. <strong>4-Loss Cooldown</strong>: 4 consecutive losses triggers a 12-bar (60 min) cool-off.</p>
+              <p>4. <strong>Funding Window Guard</strong>: Blocks orders 2 min before/after 8-hour funding events.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>தமிழ் விளக்கம் — மூலதனப் பாதுகாப்பு & கில் சுவிட்சுகள் (Risk Governance)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">CAPITAL DEFENSE</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>ரிஸ்க் மேலாண்மை & கில் சுவிட்சுகள் (Kill Switches):</strong> எந்த ஒரு சூழ்நிலையிலும் மூலதனம் அழிந்துவிடாமல் பாதுகாக்க 4 கடினமான பாதுகாப்பு விதிகள் இயற்றப்பட்டுள்ளன:</p>
+            <p>1. <strong class="tech-term">0.25% Max Risk Per Trade</strong>: ஒரு டிரேடில் அதிகபட்சம் உங்கள் கணக்கின் 0.25% மட்டுமே நஷ்டம் அனுமதிக்கப்படும்.</p>
+            <p>2. <strong class="tech-term">1% Daily Loss Halt</strong>: ஒரே நாளில் 1% நஷ்டம் அடைந்தால், சிஸ்டம் தானாகவே அன்று முழுவதும் டிரேடிங் செய்வதை நிறுத்திவிடும் (<strong class="tech-term">Automatic Halt</strong>).</p>
+            <p>3. <strong class="tech-term">5% Drawdown Kill Switch</strong>: உச்ச கட்ட கணக்கு இருப்பில் இருந்து 5% குறைந்தால் முழு அமைப்பும் முடக்கப்படும்.</p>
+            <p>4. <strong class="tech-term">4-Loss Cooldown</strong>: தொடர்ந்து 4 முறை நஷ்டம் ஏற்பட்டால், 1 மணி நேரத்திற்கு புதிய டிரேடுகள் எதுவும் செய்யப்படாது.</p>
+            <p>5. <strong class="tech-term">Funding Window Block</strong>: பியூச்சர்ஸ் மார்க்கெட்டில் நடக்கும் <strong class="tech-term">Funding Rate Snapshot</strong> (00:00, 08:00, 16:00 UTC) நேரத்திற்கு 2 நிமிடங்களுக்கு முன்பும் பின்பும் டிரேடிங் தடை செய்யப்படும்.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 14: Terminal CLI & Operations -->
+      <section class="doc-section" id="cli-operations">
+        <div class="section-header">
+          <div class="section-num">14</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">DevOps & Control</span>
+            <h2 class="section-title">Terminal CLI & Background Process Operations</h2>
+            <p class="section-subtitle">
+              How to start, stop, monitor, inspect logs, and backup the SQLite ledger with one terminal command.
+            </p>
+          </div>
+        </div>
+
+        <div class="cli-box font-mono">
+          <code>ai-trading-intelligent start</code>
+          <div class="cli-desc">Starts the FastAPI backend (port 8000) and Next.js frontend (port 3000) in the background with automatic reconnection.</div>
+        </div>
+
+        <div class="cli-box font-mono">
+          <code>ai-trading-intelligent status</code>
+          <div class="cli-desc">Inspects process health, PIDs, active listening ports, WebSocket feed status, and live BTC price.</div>
+        </div>
+
+        <div class="cli-box font-mono">
+          <code>ai-trading-intelligent logs [backend|frontend]</code>
+          <div class="cli-desc">Streams real-time execution logs directly to your terminal.</div>
+        </div>
+
+        <div class="cli-box font-mono">
+          <code>ai-trading-intelligent stop</code>
+          <div class="cli-desc">Gracefully halts all processes and cleanly frees up ports 8000 and 3000.</div>
+        </div>
+
+        <div class="tamil-box">
+          <div class="tamil-box-header">
+            <div class="tamil-box-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+              <span>தமிழ் விளக்கம் — டெர்மினல் கமாண்டுகள் (CLI Operations)</span>
+            </div>
+            <span class="badge-mono" style="color: var(--cyan); font-size: 11px;">PROCESS MANAGEMENT</span>
+          </div>
+          <div class="tamil-content tamil-text">
+            <p><strong>இயக்கும் கட்டளைகள் (How to Run):</strong> நீங்கள் எந்த டெர்மினலிலிருந்தும் மிக எளிதாக இந்த பிளாட்ஃபார்மை கட்டுப்படுத்தலாம்:</p>
+            <p>1. <strong class="tech-term">ai-trading-intelligent start</strong> — Backend மற்றும் Frontend இரண்டையும் பின்னணியில் (<strong class="tech-term">Background</strong>) இயக்கும்.</p>
+            <p>2. <strong class="tech-term">ai-trading-intelligent status</strong> — இணைய இணைப்பு, நேரடி பிட்காயின் விலை மற்றும் சிஸ்டம் நிலையை சரிபார்க்கும்.</p>
+            <p>3. <strong class="tech-term">ai-trading-intelligent logs backend</strong> — நடக்கும் ஆய்வுகள் மற்றும் சிக்னல் கணக்கீடுகளை உடனுக்குடன் பார்க்கும்.</p>
+            <p>4. <strong class="tech-term">ai-trading-intelligent stop</strong> — அனைத்து செயல்முறைகளையும் சுத்தமாக நிறுத்தும்.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 15: Tamil Glossary of Technical Terms -->
+      <section class="doc-section" id="tamil-glossary">
+        <div class="section-header">
+          <div class="section-num">15</div>
+          <div class="section-title-wrap">
+            <span class="section-tag">Educational Reference</span>
+            <h2 class="section-title">Tamil Glossary of Trading & Quantitative Terms</h2>
+            <p class="section-subtitle">
+              Comprehensive reference mapping institutional English trading terminology to simple, clear Tamil explanations.
+            </p>
+          </div>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:25%;">English Technical Term</th>
+                <th style="width:25%;">Tamil Term (தமிழாக்கம்)</th>
+                <th>Meaning & Context in Platform (விளக்கம்)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background: rgba(34,211,238,0.06);">
+                <td><strong class="font-mono" style="color:var(--cyan); font-size: 13px;">Alpha (&alpha;)</strong></td>
+                <td>தனித்துவ கணித லாபம் / கூடுதல் ஈவு</td>
+                <td>பொதுவான சந்தை நகர்வை (Beta) சாராமல், நமது தனித்துவமான அல்காரிதம் மற்றும் உத்திகள் மூலம் நாம் கூடுதலாக ஈட்டும் உண்மையான லாப விளிம்பு (Edge).</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Beta (&beta;)</strong></td>
+                <td>சந்தை நகர்வு விகிதம்</td>
+                <td>முழு சந்தையும் (Bitcoin) ஏறும் போது இயல்பாக கிடைக்கும் லாபம்; இது உத்தியின் திறமையைக் குறிக்காது.</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Perpetual Futures (Perp)</strong></td>
+                <td>காலாவதியில்லாத எதிர்கால ஒப்பந்தம்</td>
+                <td>முடிவுத் தேதி (Expiry Date) இல்லாத பிட்காயின் வர்த்தக ஒப்பந்தம். இதில் விலை ஸ்பாட் விலைக்கு அருகில் இருக்க Funding Rate பயன்படுத்தப்படுகிறது.</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Liquidity Sweep</strong></td>
+                <td>நீர்மைத் தூய்மையாக்கம் / ஸ்டாப் வேட்டை</td>
+                <td>முக்கிய எல்லைகளுக்கு வெளியே உள்ள சில்லறை வணிகர்களின் ஸ்டாப் லாஸ் ஆர்டர்களை பெரிய நிறுவனங்கள் தூண்டுதல்.</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Order Book Imbalance (OBI)</strong></td>
+                <td>ஆர்டர் புத்தக சமநிலையின்மை</td>
+                <td>வாங்குபவர்களின் (Bids) மொத்த அளவுக்கும் விற்பவர்களின் (Asks) மொத்த அளவுக்கும் இடையிலான விகித வேறுபாடு.</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Average True Range (ATR)</strong></td>
+                <td>சராசரி உண்மையான விலை எல்லை</td>
+                <td>சந்தையின் ஏற்ற இறக்கத்தை (Volatility) அளவிடும் ஒரு முக்கிய தொழில்நுட்பக் குறியீடு.</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Slippage</strong></td>
+                <td>விலை வழுக்கல்</td>
+                <td>நாம் ஆர்டர் இடும் விலைக்கு நேர்மாறாக சந்தை நகர்ந்து வேறு விலையில் நிறைவேற்றப்படும் இழப்பு.</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Brier Score</strong></td>
+                <td>பிரையர் துல்லிய மதிப்பெண்</td>
+                <td>AI கணிக்கக்கூடிய நிகழ்தகவு (Probability) எவ்வளவு உண்மையுடன் ஒத்துப்போகிறது என்பதை அளவிடும் புள்ளியியல் முறை.</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Drawdown</strong></td>
+                <td>மூலதன இறக்கம்</td>
+                <td>கணக்கின் உச்சபட்ச இருப்பிலிருந்து (Peak Balance) ஏற்பட்டுள்ள தற்போதைய சரிவு சதவீதம்.</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Funding Rate</strong></td>
+                <td>நிதி விகிதக் கட்டணம்</td>
+                <td>Perpetual Futures விலை Spot விலையோடு சமமாக இருக்க, Long மற்றும் Short வணிகர்களுக்கு இடையே 8 மணி நேரத்திற்கு ஒருமுறை பரிமாறப்படும் கட்டணம்.</td>
+              </tr>
+              <tr>
+                <td><strong class="font-mono" style="color:var(--cyan);">Exponential Moving Average (EMA)</strong></td>
+                <td>அதிவேக நகரும் சராசரி</td>
+                <td>சமீபத்திய விலை மாற்றங்களுக்கு அதிக முக்கியத்துவம் கொடுத்து ட்ரெண்டை காட்டும் தொழில்நுட்ப கோடு.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer style="margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; color: var(--text-muted); font-size: 12px;">
+        <div>
+          <b style="color: #fff;">BTC QUANTUM INTELLIGENCE</b> &bull; Stage 3 Quantitative Research Engine
+        </div>
+        <div class="font-mono" style="color: var(--cyan);">
+          VERIFIED DETERMINISTIC ARCHITECTURE &bull; 2026
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <script>
+    // Language Filter State
+    function setLanguage(mode) {
+      const btns = document.querySelectorAll('.lang-btn');
+      btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+
+      const tamilBoxes = document.querySelectorAll('.tamil-box');
+      const deepDives = document.querySelectorAll('.deep-dive-grid');
+
+      if (mode === 'ta') {
+        // Tamil Focused Mode: Keep Deep Dives and highlight Tamil
+        tamilBoxes.forEach(box => {
+          box.style.display = 'block';
+          box.style.borderLeftColor = 'var(--cyan)';
+          box.style.boxShadow = '0 0 20px rgba(34,211,238,0.15)';
+        });
+      } else if (mode === 'en') {
+        // English Focused Mode: Tamil boxes subtle
+        tamilBoxes.forEach(box => {
+          box.style.display = 'block';
+          box.style.boxShadow = 'none';
+        });
+      } else {
+        // Dual Mode
+        tamilBoxes.forEach(box => {
+          box.style.display = 'block';
+          box.style.boxShadow = 'none';
+        });
+      }
+      localStorage.setItem('doc-lang-mode', mode);
+    }
+
+    // Live search filter in sidebar
+    function filterDocs() {
+      const q = document.getElementById('docSearch').value.toLowerCase();
+      const items = document.querySelectorAll('.nav-item');
+      items.forEach(it => {
+        const text = it.textContent.toLowerCase();
+        it.style.display = text.includes(q) ? 'block' : 'none';
+      });
+    }
+
+    // Scroll spy for active sidebar navigation
+    const sections = document.querySelectorAll('section.doc-section, section.hero-banner');
+    const navLinks = document.querySelectorAll('.nav-item a');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(sec => {
+        const secTop = sec.offsetTop - 120;
+        if (window.pageYOffset >= secTop) {
+          current = sec.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(a => {
+        a.classList.remove('active');
+        if (a.getAttribute('href') === '#' + current) {
+          a.classList.add('active');
+        }
+      });
+    });
+
+    // Initialize preference
+    const savedMode = localStorage.getItem('doc-lang-mode') || 'dual';
+    setLanguage(savedMode);
+  </script>
+</body>
+</html>

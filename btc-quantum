@@ -1,0 +1,402 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# BTC QUANTUM INTELLIGENCE - Institutional CLI Process & Lifecycle Manager
+# Usage:
+#   ai-trading-intelligent start [--prod|--dev]  - Start Backend and Frontend
+#   ai-trading-intelligent stop                  - Stop all services cleanly
+#   ai-trading-intelligent restart               - Restart the entire platform
+#   ai-trading-intelligent status                - Check service health and live BTC feed
+#   ai-trading-intelligent health                - Detailed system metrics & readiness probe
+#   ai-trading-intelligent backup                - Create verified atomic DB snapshot
+#   ai-trading-intelligent restore <file>        - Restore DB from verified backup
+#   ai-trading-intelligent docker [up|down|prod] - Manage Docker containers
+#   ai-trading-intelligent logs [backend|front]  - View real-time logs
+#   ai-trading-intelligent alias <name>          - Create a custom terminal alias
+# ==============================================================================
+
+set -e
+
+PROJECT_DIR="/home/shadow-khan/ai-trading-intelligent"
+PYTHON_BIN="/home/shadow-khan/myenv/bin/python"
+NODE_BIN="/home/shadow-khan/.nvm/versions/node/v22.23.3/bin/node"
+NPM_BIN="/home/shadow-khan/.nvm/versions/node/v22.23.3/bin/npm"
+NPX_BIN="/home/shadow-khan/.nvm/versions/node/v22.23.3/bin/npx"
+
+PID_DIR="$PROJECT_DIR/.pids"
+LOG_DIR="$PROJECT_DIR/logs"
+
+BACKEND_PID_FILE="$PID_DIR/backend.pid"
+FRONTEND_PID_FILE="$PID_DIR/frontend.pid"
+
+BACKEND_LOG="$LOG_DIR/backend.log"
+FRONTEND_LOG="$LOG_DIR/frontend.log"
+
+mkdir -p "$PID_DIR" "$LOG_DIR" "$PROJECT_DIR/backups"
+
+# Load .env if present
+if [ -f "$PROJECT_DIR/.env" ]; then
+    set -a
+    source "$PROJECT_DIR/.env"
+    set +a
+fi
+
+# Color formatting
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+is_port_listening() {
+    local port=$1
+    if lsof -i ":$port" -sTCP:LISTEN -t 2>/dev/null | grep -q '[0-9]'; then
+        return 0
+    elif ss -tlpn 2>/dev/null | grep -q -E ":$port\b"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+get_pid_by_port() {
+    local port=$1
+    local p=$(lsof -i ":$port" -sTCP:LISTEN -t 2>/dev/null | head -1)
+    if [ -n "$p" ]; then
+        echo "$p"
+    else
+        ss -tlpn 2>/dev/null | grep -E ":$port\b" | grep -o 'pid=[0-9]*' | head -1 | cut -d'=' -f2
+    fi
+}
+
+start_services() {
+    local mode="${1:-}"
+    echo -e "${BOLD}${CYAN}=== Starting BTC Quantum Intelligence Platform ===${NC}"
+
+    # 1. Start Backend
+    if is_port_listening 8000; then
+        local b_pid=$(get_pid_by_port 8000)
+        echo -e "${YELLOW}[Backend] Already running on http://localhost:8000 (PID: ${b_pid})${NC}"
+    else
+        echo -e "[1/2] Starting Python FastAPI Backend on port 8000..."
+        cd "$PROJECT_DIR/backend"
+        setsid env PYTHONPATH="$PROJECT_DIR/backend" "$PYTHON_BIN" -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > "$BACKEND_LOG" 2>&1 < /dev/null &
+        local b_pid=$!
+        echo "$b_pid" > "$BACKEND_PID_FILE"
+
+        # Wait for startup
+        local waited=0
+        while ! is_port_listening 8000 && [ $waited -lt 30 ]; do
+            sleep 0.5
+            waited=$((waited + 1))
+        done
+
+        if is_port_listening 8000; then
+            echo -e "${GREEN}✓ [Backend] Successfully started on http://localhost:8000 (PID: $b_pid)${NC}"
+        else
+            echo -e "${RED}✗ [Backend] Failed to start on port 8000. Inspect logs with: ai-trading-intelligent logs backend${NC}"
+        fi
+    fi
+
+    # 2. Start Frontend
+    if is_port_listening 3000; then
+        local f_pid=$(get_pid_by_port 3000)
+        echo -e "${YELLOW}[Frontend] Already running on http://localhost:3000 (PID: ${f_pid})${NC}"
+    else
+        cd "$PROJECT_DIR/frontend"
+        export PATH="/home/shadow-khan/.nvm/versions/node/v22.23.3/bin:$PATH"
+
+        # Determine Production vs Development mode
+        if [ "$mode" = "--dev" ]; then
+            echo -e "[2/2] Starting Next.js Frontend in DEVELOPMENT mode on port 3000..."
+            setsid "$NPM_BIN" run dev > "$FRONTEND_LOG" 2>&1 < /dev/null &
+        else
+            # Default to production-optimized mode
+            if [ ! -f "$PROJECT_DIR/frontend/.next/BUILD_ID" ]; then
+                echo -e "[Frontend] Building Next.js production bundle first..."
+                "$NPM_BIN" run build > "$FRONTEND_LOG" 2>&1
+            fi
+            echo -e "[2/2] Starting Next.js Frontend in PRODUCTION mode on port 3000..."
+            export NODE_ENV=production
+            setsid "$NPM_BIN" run start > "$FRONTEND_LOG" 2>&1 < /dev/null &
+        fi
+        local f_pid=$!
+        echo "$f_pid" > "$FRONTEND_PID_FILE"
+
+        # Wait for startup
+        local waited=0
+        while ! is_port_listening 3000 && [ $waited -lt 25 ]; do
+            sleep 0.5
+            waited=$((waited + 1))
+        done
+
+        if is_port_listening 3000; then
+            echo -e "${GREEN}✓ [Frontend] Successfully started on http://localhost:3000 (PID: $f_pid)${NC}"
+        else
+            echo -e "${YELLOW}! [Frontend] Process launched ($f_pid), initializing on port 3000... Check: ai-trading-intelligent status${NC}"
+        fi
+    fi
+
+    echo ""
+    echo -e "${BOLD}${GREEN}Platform is READY!${NC}"
+    echo -e "Dashboard:   ${CYAN}http://localhost:3000${NC}"
+    echo -e "Backend API: ${CYAN}http://localhost:8000/docs${NC}"
+    echo ""
+}
+
+stop_services() {
+    echo -e "${BOLD}${YELLOW}=== Stopping BTC Quantum Intelligence Services ===${NC}"
+
+    # Also stop any docker compose containers if active
+    if command -v docker >/dev/null 2>&1; then
+        if [ -f "$PROJECT_DIR/docker-compose.yml" ]; then
+            (cd "$PROJECT_DIR" && docker compose down 2>/dev/null) || true
+        fi
+        if [ -f "$PROJECT_DIR/docker-compose.prod.yml" ]; then
+            (cd "$PROJECT_DIR" && docker compose -f docker-compose.prod.yml down 2>/dev/null) || true
+        fi
+    fi
+
+    # 1. Stop Backend
+    local b_pid=""
+    if [ -f "$BACKEND_PID_FILE" ]; then
+        b_pid=$(cat "$BACKEND_PID_FILE")
+    fi
+    if [ -n "$b_pid" ] && kill -0 "$b_pid" 2>/dev/null; then
+        echo -e "Stopping Backend (PID: $b_pid)..."
+        kill -- -"$b_pid" 2>/dev/null || kill "$b_pid" 2>/dev/null || true
+        sleep 0.5
+        kill -9 -- -"$b_pid" 2>/dev/null || kill -9 "$b_pid" 2>/dev/null || true
+        echo -e "${GREEN}✓ Backend stopped.${NC}"
+    fi
+    local b_port_pid=$(get_pid_by_port 8000)
+    if [ -n "$b_port_pid" ]; then
+        kill -9 "$b_port_pid" 2>/dev/null || true
+        echo -e "${GREEN}✓ Backend port 8000 freed.${NC}"
+    fi
+    rm -f "$BACKEND_PID_FILE"
+
+    # 2. Stop Frontend
+    local f_pid=""
+    if [ -f "$FRONTEND_PID_FILE" ]; then
+        f_pid=$(cat "$FRONTEND_PID_FILE")
+    fi
+    if [ -n "$f_pid" ] && kill -0 "$f_pid" 2>/dev/null; then
+        echo -e "Stopping Frontend (PID: $f_pid)..."
+        kill -- -"$f_pid" 2>/dev/null || kill "$f_pid" 2>/dev/null || true
+        sleep 0.5
+        kill -9 -- -"$f_pid" 2>/dev/null || kill -9 "$f_pid" 2>/dev/null || true
+        echo -e "${GREEN}✓ Frontend stopped.${NC}"
+    fi
+    local f_port_pid=$(get_pid_by_port 3000)
+    if [ -n "$f_port_pid" ]; then
+        kill -9 "$f_port_pid" 2>/dev/null || true
+        echo -e "${GREEN}✓ Frontend port 3000 freed.${NC}"
+    fi
+    rm -f "$FRONTEND_PID_FILE"
+
+    # Wait up to 3 seconds for ports to completely clear
+    local waited=0
+    while (is_port_listening 8000 || is_port_listening 3000) && [ $waited -lt 6 ]; do
+        sleep 0.5
+        waited=$((waited + 1))
+    done
+
+    echo -e "${BOLD}${GREEN}All services stopped cleanly.${NC}"
+}
+
+status_services() {
+    echo -e "${BOLD}${CYAN}=== BTC Quantum Intelligence Platform Status ===${NC}"
+
+    # Backend check
+    if is_port_listening 8000; then
+        local b_pid=$(get_pid_by_port 8000)
+        local health=$(curl -s --max-time 2 http://localhost:8000/health 2>/dev/null || echo "{}")
+        local status=$(echo "$health" | jq -r '.market_status // "OK"' 2>/dev/null || echo "OK")
+        local price=$(echo "$health" | jq -r '.last_price // "—"' 2>/dev/null || echo "—")
+        echo -e "Backend:  ${GREEN}● RUNNING${NC} (Port 8000, PID: ${b_pid}) | Feed: ${status} | BTC: \$${price}"
+    else
+        echo -e "Backend:  ${RED}○ STOPPED${NC} (Port 8000 is inactive)"
+    fi
+
+    # Frontend check
+    if is_port_listening 3000; then
+        local f_pid=$(get_pid_by_port 3000)
+        echo -e "Frontend: ${GREEN}● RUNNING${NC} (Port 3000, PID: ${f_pid}) -> http://localhost:3000"
+    else
+        echo -e "Frontend: ${RED}○ STOPPED${NC} (Port 3000 is inactive)"
+    fi
+    echo ""
+}
+
+show_health() {
+    echo -e "${BOLD}${CYAN}=== Production Health & Observability Metrics ===${NC}"
+    if ! is_port_listening 8000; then
+        echo -e "${RED}Backend is not running on port 8000.${NC}"
+        return 1
+    fi
+
+    local status_json=$(curl -s --max-time 3 http://localhost:8000/health/status 2>/dev/null || echo "{}")
+    local ready_json=$(curl -s --max-time 3 http://localhost:8000/health/ready 2>/dev/null || echo "{}")
+
+    if [ -z "$status_json" ] || [ "$status_json" = "{}" ]; then
+        echo -e "${RED}Failed to query backend health endpoints.${NC}"
+        return 1
+    fi
+
+    local uptime=$(echo "$status_json" | jq -r '.uptime_sec // 0' 2>/dev/null)
+    local mem_mb=$(echo "$status_json" | jq -r '.memory_rss_mb // 0' 2>/dev/null)
+    local clients=$(echo "$status_json" | jq -r '.active_ws_clients // 0' 2>/dev/null)
+    local env_name=$(echo "$status_json" | jq -r '.environment // "production"' 2>/dev/null)
+    local feed=$(echo "$status_json" | jq -r '.market.feed_status // "UNKNOWN"' 2>/dev/null)
+    local btc_price=$(echo "$status_json" | jq -r '.market.last_price // 0' 2>/dev/null)
+    local data_age=$(echo "$status_json" | jq -r '.market.data_age_sec // 0' 2>/dev/null)
+    local data_safe=$(echo "$status_json" | jq -r '.market.is_data_safe // false' 2>/dev/null)
+    local db_status=$(echo "$ready_json" | jq -r '.database // "connected"' 2>/dev/null)
+    local equity=$(echo "$status_json" | jq -r '.portfolio.current_equity // 10000' 2>/dev/null)
+    local has_open=$(echo "$status_json" | jq -r '.portfolio.open_position // false' 2>/dev/null)
+    local closed_count=$(echo "$status_json" | jq -r '.portfolio.closed_trades_count // 0' 2>/dev/null)
+
+    echo -e "Environment:       ${BOLD}${env_name}${NC}"
+    echo -e "Uptime:            ${CYAN}${uptime}s${NC}"
+    echo -e "Memory (RSS):      ${CYAN}${mem_mb} MB${NC}"
+    echo -e "Active WS Clients: ${CYAN}${clients}${NC}"
+    echo -e "Database:          ${GREEN}${db_status}${NC}"
+    echo -e "Exchange Feed:     ${GREEN}${feed}${NC} (Age: ${data_age}s | Safe: ${data_safe})"
+    echo -e "BTC Mark Price:    ${BOLD}\$${btc_price}${NC}"
+    echo -e "Portfolio Equity:  ${GREEN}\$${equity}${NC} (Open Pos: ${has_open} | History: ${closed_count} trades)"
+    echo ""
+}
+
+db_backup() {
+    "$PYTHON_BIN" "$PROJECT_DIR/scripts/backup_db.py" backup
+}
+
+db_restore() {
+    local file=$1
+    if [ -z "$file" ]; then
+        echo -e "${RED}Error: Please specify the backup file to restore.${NC}"
+        echo -e "Example: ai-trading-intelligent restore backups/ledger-20261111-133706.db"
+        exit 1
+    fi
+    "$PYTHON_BIN" "$PROJECT_DIR/scripts/backup_db.py" restore "$file"
+}
+
+manage_docker() {
+    local subcmd=$1
+    shift || true
+    case "$subcmd" in
+        up)
+            echo "Starting standard Docker Compose platform..."
+            cd "$PROJECT_DIR" && docker compose up -d --build "$@"
+            ;;
+        prod|prod-up)
+            echo "Starting Production Gateway (Nginx + Standalone Next.js + FastAPI)..."
+            cd "$PROJECT_DIR" && docker compose -f docker-compose.prod.yml up -d --build "$@"
+            ;;
+        down)
+            echo "Stopping Docker Compose platform..."
+            cd "$PROJECT_DIR" && (docker compose down || true) && (docker compose -f docker-compose.prod.yml down || true)
+            ;;
+        status|ps)
+            cd "$PROJECT_DIR" && docker compose ps
+            ;;
+        logs)
+            cd "$PROJECT_DIR" && docker compose logs -f "$@"
+            ;;
+        *)
+            echo "Usage: ai-trading-intelligent docker [up|prod|down|status|logs]"
+            ;;
+    esac
+}
+
+show_logs() {
+    local target=$1
+    if [ "$target" = "backend" ]; then
+        echo -e "${CYAN}Tailing Backend logs ($BACKEND_LOG)... (Press Ctrl+C to exit)${NC}"
+        tail -n 50 -f "$BACKEND_LOG"
+    elif [ "$target" = "frontend" ]; then
+        echo -e "${CYAN}Tailing Frontend logs ($FRONTEND_LOG)... (Press Ctrl+C to exit)${NC}"
+        tail -n 50 -f "$FRONTEND_LOG"
+    else
+        echo -e "${BOLD}Recent Backend Output:${NC}"
+        tail -n 15 "$BACKEND_LOG" 2>/dev/null || echo "No backend log yet."
+        echo ""
+        echo -e "${BOLD}Recent Frontend Output:${NC}"
+        tail -n 15 "$FRONTEND_LOG" 2>/dev/null || echo "No frontend log yet."
+        echo ""
+        echo -e "Tip: Use '${CYAN}ai-trading-intelligent logs backend${NC}' or '${CYAN}ai-trading-intelligent logs frontend${NC}' for live logs."
+    fi
+}
+
+set_alias() {
+    local new_name=$1
+    if [ -z "$new_name" ]; then
+        echo -e "${RED}Error: Please specify the custom command name.${NC}"
+        echo -e "Example: ${CYAN}ai-trading-intelligent alias btc${NC} or ${CYAN}ai-trading-intelligent alias trade${NC}"
+        exit 1
+    fi
+
+    local target_bin="/home/shadow-khan/.local/bin/$new_name"
+    ln -sf "$PROJECT_DIR/btc-quantum" "$target_bin"
+    chmod +x "$target_bin"
+
+    echo -e "${GREEN}✓ Successfully created command alias: ${BOLD}$new_name${NC}"
+    echo -e "You can now control the app from anywhere using:"
+    echo -e "  ${CYAN}$new_name start${NC}"
+    echo -e "  ${CYAN}$new_name stop${NC}"
+    echo -e "  ${CYAN}$new_name status${NC}"
+    echo -e "  ${CYAN}$new_name health${NC}"
+    echo -e "  ${CYAN}$new_name restart${NC}"
+}
+
+case "$1" in
+    start)
+        start_services "$2"
+        ;;
+    stop)
+        stop_services
+        ;;
+    restart)
+        stop_services
+        sleep 1
+        start_services "$2"
+        ;;
+    status)
+        status_services
+        ;;
+    health)
+        show_health
+        ;;
+    backup)
+        db_backup
+        ;;
+    restore)
+        db_restore "$2"
+        ;;
+    docker)
+        manage_docker "$2" "$3"
+        ;;
+    logs)
+        show_logs "$2"
+        ;;
+    alias|rename)
+        set_alias "$2"
+        ;;
+    *)
+        cmd_name=$(basename "$0")
+        echo -e "${BOLD}BTC Quantum Intelligence - Institutional CLI Process Manager${NC}"
+        echo -e "Usage:"
+        echo -e "  ${CYAN}$cmd_name start [--prod|--dev]${NC} - Start platform (defaults to optimized production)"
+        echo -e "  ${CYAN}$cmd_name stop${NC}                  - Stop both Backend and Frontend"
+        echo -e "  ${CYAN}$cmd_name restart${NC}               - Restart both services"
+        echo -e "  ${CYAN}$cmd_name status${NC}                - Show process status and live BTC feed"
+        echo -e "  ${CYAN}$cmd_name health${NC}                - Detailed production metrics & probe status"
+        echo -e "  ${CYAN}$cmd_name backup${NC}                - Create an atomic verified DB snapshot"
+        echo -e "  ${CYAN}$cmd_name restore <file>${NC}        - Safely restore database from backup file"
+        echo -e "  ${CYAN}$cmd_name docker [up|prod|down]${NC} - Manage Docker container stack"
+        echo -e "  ${CYAN}$cmd_name logs [target]${NC}         - View logs (optional: backend | frontend)"
+        echo -e "  ${CYAN}$cmd_name alias <name>${NC}          - Create custom alias (e.g. '$cmd_name alias btc')"
+        exit 1
+        ;;
+esac
