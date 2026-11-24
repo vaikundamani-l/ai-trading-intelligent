@@ -71,9 +71,36 @@ export interface CandleData {
   rsi?: number | null;
   sbr_prev_high?: number | null;
   sbr_prev_low?: number | null;
+  signal?: 'BUY' | 'SELL' | null;
+  signal_action?: 'BUY' | 'SELL' | null;
+  signal_strategy?: string | null;
+  signal_price?: number | null;
+  signal_stop?: number | null;
+  signal_target?: number | null;
+  signal_outcome?: 'TARGET_HIT' | 'BREAKEVEN_WIN' | 'STOP_HIT' | 'TIME_EXIT' | 'ACTIVE' | null;
+  signal_pnl_r?: number | null;
+  signal_exit_price?: number | null;
+  signal_exit_bars?: number | null;
+}
+
+export interface PassedSignal {
+  time: number;
+  action: 'BUY' | 'SELL';
+  strategy: string;
+  price: number;
+  stop_loss?: number | null;
+  take_profit?: number | null;
+  outcome?: 'TARGET_HIT' | 'BREAKEVEN_WIN' | 'STOP_HIT' | 'TIME_EXIT' | 'ACTIVE';
+  pnl_r?: number | null;
+  exit_price?: number | null;
+  exit_bars?: number | null;
 }
 
 export interface SignalDecision {
+  resolution?: string;
+  bar_seconds?: number;
+  max_hold_bars?: number;
+  max_hold_seconds?: number;
   quality?: {grade: string; checks: {label: string; passed: boolean}[]; explanation: string; eligible_for_auto_paper: boolean};
   action: 'BUY' | 'SELL' | 'WAIT' | 'WAIT / NO TRADE' | 'HALTED / DATA UNSAFE';
   direction: number;

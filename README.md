@@ -31,6 +31,34 @@ Ported directly from the research backtester `btc_sbr5_backtest.py`. Operates on
 6. **Stop & Target**: Stop buffered by $0.10 \times \text{ATR}_{14}$, clamped to $[0.15\%, 0.80\%]$. Target set at $1.80\text{R}$ gross. Maximum hold period strictly 25 minutes (5 candles).
 7. **Funding Gate**: Trade blocked if a snapshot (00:00, 08:00, 16:00 UTC) occurs within 2 minutes before entry through 2 minutes after the 25-minute holding period.
 
+The scalping guard blocks reversals against a strong opposing EMA9/21/50 trend, using the previous candles and a three-bar EMA21 slope above 0.15 ATR in magnitude. It requires 50 prior bars; ranges still permit reversals. This filter changes the original research baseline and needs new out-of-sample validation before any profitability claim.
+
+Momentum mode also detects six-bar breakouts with a 0.1 ATR close beyond the range, a body of at least 0.6 ATR, close in the directional quarter of the candle, and 1.25x prior average volume. EMA9 pullback continuations require a close past the previous candle, directional EMA9/21 alignment and at least average volume. Momentum candidates have a three-bar quiet period to reduce repeated alerts. The same candidates feed live evaluation, chart replay and backtests; funding, fees, stop-distance, data and account-risk gates can still reject them. This adds coverage, not a guarantee to capture every move or make a profit.
+
+**Selected-timeframe signals:** the main page supports 1m, 3m, 5m, 15m, 30m, 1h, 4h and 1d. The card requests `/api/signals/current?resolution=...`; chart markers use the same selected-duration strategy. Candle completion, entry expiry, freshness, holding periods and timeout outcomes use the selected duration. Holding is at most five selected candles; entry validity is at most two minutes or one selected candle, whichever is shorter. Big-move measurements remain per three selected bars. For intervals below 1h, the 0.80% maximum stop distance remains in force. For 1h/4h/1d observations, the allowed maximum distance adapts to twice the prior ATR as a fraction of entry, with a 0.80% floor and an 8% ceiling. Stops remain based on the signal candle extreme; setups beyond the adaptive ceiling are rejected. Wider modeled stops do not increase the account risk fraction or enable higher-timeframe auto execution.
+
+Selected-timeframe observations do not write to the legacy 5m signal ledger or drive the background 5m paper executor. Switching timeframes clears old chart markers and masks mismatched live signals; late network responses cannot overwrite the current selection. The 5m WebSocket signal is ignored when another timeframe is selected. Multi-timeframe mechanics are regression tested, not an out-of-sample validation of performance on every interval.
+
+Funding exclusion uses the actual selected holding window when shorter than a full funding interval. Longer windows (including daily candles that close on funding boundaries) disclose funding exposure instead of rejecting every setup. Their displayed net target excludes future funding charges; these observations require separate funding-aware validation.
+
+**Default: big move only.** `SCALP5_BIG_MOVE_ONLY=True` disables pure sweep/reclaim entries and filters momentum candidates before alert suppression. The shared policy in `backend/app/strategies/big_move.py` requires all of the following, symmetrically for buys and sells:
+
+| Rule | Required minimum |
+| --- | --- |
+| Directional close-to-close move over three completed selected-timeframe bars | 0.35% |
+| Signal body | 1 prior ATR and 0.15% of open |
+| Relative volume | 1.75x prior 24-bar average |
+| Three-bar path efficiency (absolute net move / absolute close changes) | 70% |
+| Modeled gross target distance | 0.50% |
+| Modeled net target after fees and slippage | 0.35% |
+| Gross target / round-trip modeled costs | 3x |
+
+Small reversals, minor pullbacks and inefficient zigzags are ignored. Chart replay and live evaluation share the filters; backtest simulation also applies the target/cost gate. Setting the flag to False restores normal mode; use `BacktestConfig(big_move_only=False)` explicitly to reproduce normal-mode tests. These thresholds describe observed momentum and a modeled target, not a prediction of future movement or validated profitability. Existing data freshness, dislocation, funding, maximum stop and account-risk protections still apply.
+
+The chart refreshes candle/setup data every five seconds. Its live EMA and RSI use candle closes with one provisional close for the active candle; repeated ticks do not consume extra indicator periods. Run `cd frontend && npm run test:chart` for the indicator regression checks.
+
+Chart markers on completed selected-timeframe bars replay the strategy's funding, trend, stop-distance and cost checks. Generated setups are labeled MODELED, use the next open when available, and are not evidence of real fills or account-risk approval. Outcome R includes estimated taker fees, GST and slippage, with stop gaps charged at the worse opening price. An unfinished holding window remains ACTIVE until its final bar closes. Historical signals remain available in the signal log; chart eligibility follows the current strategy rules. The chart always reports the historical signal count, including zero, and lists candidate rejection counts (stop distance, funding, target costs or candle history). No qualifying candidates is shown explicitly instead of leaving a blank unexplained chart.
+
 ### ALPHA-1R: Order-Flow Intelligence (Research Only)
 Analyzes Top-15 order-book imbalance (OBI), trade flow imbalance (TFI), and weighted micro-price deviation ($P_{\text{wmid}} - P_{\text{mid}}$). Classifies instantaneous buying/selling pressure without assuming depth alone guarantees directional edge.
 

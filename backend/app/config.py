@@ -39,6 +39,16 @@ class Settings:
     SBR5_MAX_HOLD_BARS: int = 5        # 25 minutes
     SBR5_MIN_STOP_FRACTION: float = 0.0015  # 15 bps minimum
     SBR5_MAX_STOP_FRACTION: float = 0.0080  # 80 bps maximum
+    SBR5_TREND_FILTER: bool = True     # Avoid fading an established opposing trend
+    SCALP5_MOMENTUM_ENABLED: bool = True  # Breakouts and trend pullback continuations
+    SCALP5_BIG_MOVE_ONLY: bool = True  # Preserve big-move-only selection
+    ENABLE_RESEARCH_ALPHA2_SIGNALS: bool = False  # Separate validation required before live selection
+    ENABLE_RESEARCH_TRAILING_STOPS: bool = False  # Static stops until exits are validated against replay
+    MAX_SIGNAL_SPREAD_BPS: float = 2.0
+    HIGHER_TF_STOP_ATR_MULTIPLIER: float = 2.0
+    HIGHER_TF_MAX_STOP_FRACTION: float = 0.08  # Modeled hourly/daily stop ceiling
+    SCALP5_CONTEXT_PROFILE: str = "baseline"  # Research variants require validation before promotion
+    MAX_ENTRY_DEVIATION_FRACTION: float = 0.001  # Reject late/chased entry quotes >0.10% from close
     
     # Risk Limits (Capital Preservation Architecture)
     MAX_RISK_FRACTION: float = 0.0025          # 0.25% equity per trade

@@ -1,0 +1,1903 @@
+{
+  "protocol": "ENGINE_RESEARCH_PROTOCOL.md",
+  "dataset": {
+    "path": "/home/shadow-khan/ai-trading-intelligent/backend/research/winrate_candles.json",
+    "sha256": "13c66f08d5438a0b31e0661ef2097320f3fa5868dc5be92db54081a1f90fd4f3",
+    "rows": 8640,
+    "base_seconds": 900,
+    "missing_intervals": 0,
+    "start_utc": "2026-08-11T18:30:00+00:00",
+    "end_utc": "2026-11-09T18:30:00+00:00",
+    "previously_used_in_research": true,
+    "independent_holdout": false
+  },
+  "execution_assumptions": {
+    "base_fee_per_leg_bps": 5,
+    "gst_multiplier": 1.18,
+    "base_slip_per_leg_bps": 1,
+    "funding_interval_seconds": 28800,
+    "max_risk_fraction": 0.0025,
+    "max_entry_deviation_fraction": 0.001,
+    "higher_tf_stop_atr_multiplier": 2.0,
+    "higher_tf_max_stop_fraction": 0.08,
+    "context_profiles_are_hypotheses": true
+  },
+  "splits": {
+    "development": [
+      "2026-08-11T18:30:00+00:00",
+      "2026-10-04T18:30:00+00:00"
+    ],
+    "validation": [
+      "2026-10-04T18:30:00+00:00",
+      "2026-10-22T18:30:00+00:00"
+    ],
+    "evaluation": [
+      "2026-10-22T18:30:00+00:00",
+      "2026-11-09T18:30:00+00:00"
+    ]
+  },
+  "compared_profiles": [
+    "baseline",
+    "trend_context",
+    "trend_and_extension"
+  ],
+  "trial_count": 15,
+  "comparisons": [
+    {
+      "resolution": "15m",
+      "bars": 8640,
+      "profiles": [
+        {
+          "profile": "baseline",
+          "qualified_opportunities": 96,
+          "rejected_candidates": {
+            "target_costs": 8,
+            "funding": 28,
+            "stop_distance": 26
+          },
+          "segments": {
+            "development": {
+              "trades": 55,
+              "wins": 17,
+              "win_rate_pct": 30.91,
+              "mean_net_bps": -16.834,
+              "mean_net_bps_block_interval_95": [
+                -25.636,
+                -8.73
+              ],
+              "profit_factor": 0.346,
+              "equity_return_pct": -3.567,
+              "realized_max_drawdown_pct": 3.81,
+              "max_loss_streak": 8,
+              "long_trades": 32,
+              "short_trades": 23,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 20,
+              "wins": 5,
+              "win_rate_pct": 25.0,
+              "mean_net_bps": -11.997,
+              "mean_net_bps_block_interval_95": [
+                -39.953,
+                14.843
+              ],
+              "profit_factor": 0.476,
+              "equity_return_pct": -1.03,
+              "realized_max_drawdown_pct": 1.592,
+              "max_loss_streak": 9,
+              "long_trades": 9,
+              "short_trades": 11,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 17,
+              "wins": 4,
+              "win_rate_pct": 23.53,
+              "mean_net_bps": -17.288,
+              "mean_net_bps_block_interval_95": [
+                -37.319,
+                -0.221
+              ],
+              "profit_factor": 0.368,
+              "equity_return_pct": -1.074,
+              "realized_max_drawdown_pct": 1.213,
+              "max_loss_streak": 5,
+              "long_trades": 5,
+              "short_trades": 12,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 17,
+              "wins": 3,
+              "win_rate_pct": 17.65,
+              "mean_net_bps": -21.295,
+              "mean_net_bps_block_interval_95": [
+                -41.338,
+                -4.218
+              ],
+              "profit_factor": 0.29,
+              "equity_return_pct": -1.237,
+              "realized_max_drawdown_pct": 1.237,
+              "max_loss_streak": 6,
+              "long_trades": 5,
+              "short_trades": 12,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 17,
+              "wins": 3,
+              "win_rate_pct": 17.65,
+              "mean_net_bps": -33.103,
+              "mean_net_bps_block_interval_95": [
+                -53.16,
+                -16.014
+              ],
+              "profit_factor": 0.154,
+              "equity_return_pct": -1.699,
+              "realized_max_drawdown_pct": 1.699,
+              "max_loss_streak": 6,
+              "long_trades": 5,
+              "short_trades": 12,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 17,
+              "wins": 4,
+              "win_rate_pct": 23.53,
+              "mean_net_bps": -17.288,
+              "mean_net_bps_block_interval_95": [
+                -37.319,
+                -0.221
+              ],
+              "profit_factor": 0.368,
+              "equity_return_pct": -1.074,
+              "realized_max_drawdown_pct": 1.213,
+              "max_loss_streak": 5,
+              "long_trades": 5,
+              "short_trades": 12,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 17,
+              "wins": 4,
+              "win_rate_pct": 23.53,
+              "mean_net_bps": -17.288,
+              "mean_net_bps_block_interval_95": [
+                -37.319,
+                -0.221
+              ],
+              "profit_factor": 0.368,
+              "equity_return_pct": -1.074,
+              "realized_max_drawdown_pct": 1.213,
+              "max_loss_streak": 5,
+              "long_trades": 5,
+              "short_trades": 12,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_context",
+          "qualified_opportunities": 68,
+          "rejected_candidates": {
+            "target_costs": 5,
+            "funding": 20,
+            "stop_distance": 22
+          },
+          "segments": {
+            "development": {
+              "trades": 38,
+              "wins": 11,
+              "win_rate_pct": 28.95,
+              "mean_net_bps": -14.091,
+              "mean_net_bps_block_interval_95": [
+                -25.23,
+                -2.195
+              ],
+              "profit_factor": 0.435,
+              "equity_return_pct": -2.133,
+              "realized_max_drawdown_pct": 2.375,
+              "max_loss_streak": 7,
+              "long_trades": 24,
+              "short_trades": 14,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 17,
+              "wins": 4,
+              "win_rate_pct": 23.53,
+              "mean_net_bps": -9.372,
+              "mean_net_bps_block_interval_95": [
+                -39.573,
+                21.4
+              ],
+              "profit_factor": 0.544,
+              "equity_return_pct": -0.767,
+              "realized_max_drawdown_pct": 1.372,
+              "max_loss_streak": 11,
+              "long_trades": 9,
+              "short_trades": 8,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 13,
+              "wins": 3,
+              "win_rate_pct": 23.08,
+              "mean_net_bps": -14.84,
+              "mean_net_bps_block_interval_95": [
+                -33.489,
+                1.125
+              ],
+              "profit_factor": 0.458,
+              "equity_return_pct": -0.651,
+              "realized_max_drawdown_pct": 0.728,
+              "max_loss_streak": 4,
+              "long_trades": 5,
+              "short_trades": 8,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 13,
+              "wins": 2,
+              "win_rate_pct": 15.38,
+              "mean_net_bps": -18.846,
+              "mean_net_bps_block_interval_95": [
+                -37.508,
+                -2.874
+              ],
+              "profit_factor": 0.361,
+              "equity_return_pct": -0.796,
+              "realized_max_drawdown_pct": 0.796,
+              "max_loss_streak": 5,
+              "long_trades": 5,
+              "short_trades": 8,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 13,
+              "wins": 2,
+              "win_rate_pct": 15.38,
+              "mean_net_bps": -30.654,
+              "mean_net_bps_block_interval_95": [
+                -49.335,
+                -14.672
+              ],
+              "profit_factor": 0.2,
+              "equity_return_pct": -1.172,
+              "realized_max_drawdown_pct": 1.172,
+              "max_loss_streak": 5,
+              "long_trades": 5,
+              "short_trades": 8,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 13,
+              "wins": 3,
+              "win_rate_pct": 23.08,
+              "mean_net_bps": -14.84,
+              "mean_net_bps_block_interval_95": [
+                -33.489,
+                1.125
+              ],
+              "profit_factor": 0.458,
+              "equity_return_pct": -0.651,
+              "realized_max_drawdown_pct": 0.728,
+              "max_loss_streak": 4,
+              "long_trades": 5,
+              "short_trades": 8,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 13,
+              "wins": 3,
+              "win_rate_pct": 23.08,
+              "mean_net_bps": -14.84,
+              "mean_net_bps_block_interval_95": [
+                -33.489,
+                1.125
+              ],
+              "profit_factor": 0.458,
+              "equity_return_pct": -0.651,
+              "realized_max_drawdown_pct": 0.728,
+              "max_loss_streak": 4,
+              "long_trades": 5,
+              "short_trades": 8,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_and_extension",
+          "qualified_opportunities": 8,
+          "rejected_candidates": {
+            "funding": 2,
+            "target_costs": 2
+          },
+          "segments": {
+            "development": {
+              "trades": 3,
+              "wins": 1,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": -11.406,
+              "mean_net_bps_block_interval_95": [
+                -11.406,
+                -11.406
+              ],
+              "profit_factor": 0.518,
+              "equity_return_pct": -0.146,
+              "realized_max_drawdown_pct": 0.303,
+              "max_loss_streak": 2,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 2,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -33.522,
+              "mean_net_bps_block_interval_95": [
+                -33.522,
+                -33.522
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.265,
+              "realized_max_drawdown_pct": 0.265,
+              "max_loss_streak": 2,
+              "long_trades": 2,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 3,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -20.793,
+              "mean_net_bps_block_interval_95": [
+                -20.793,
+                -20.793
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.323,
+              "realized_max_drawdown_pct": 0.323,
+              "max_loss_streak": 3,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 3,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -24.797,
+              "mean_net_bps_block_interval_95": [
+                -24.797,
+                -24.797
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.335,
+              "realized_max_drawdown_pct": 0.335,
+              "max_loss_streak": 3,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 3,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -36.603,
+              "mean_net_bps_block_interval_95": [
+                -36.603,
+                -36.603
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.396,
+              "realized_max_drawdown_pct": 0.396,
+              "max_loss_streak": 3,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 3,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -20.793,
+              "mean_net_bps_block_interval_95": [
+                -20.793,
+                -20.793
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.323,
+              "realized_max_drawdown_pct": 0.323,
+              "max_loss_streak": 3,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 3,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -20.793,
+              "mean_net_bps_block_interval_95": [
+                -20.793,
+                -20.793
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.323,
+              "realized_max_drawdown_pct": 0.323,
+              "max_loss_streak": 3,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        }
+      ],
+      "development_selected_profile": "trend_context",
+      "validation_passed": false
+    },
+    {
+      "resolution": "30m",
+      "bars": 4320,
+      "profiles": [
+        {
+          "profile": "baseline",
+          "qualified_opportunities": 33,
+          "rejected_candidates": {
+            "funding": 32,
+            "stop_distance": 20
+          },
+          "segments": {
+            "development": {
+              "trades": 20,
+              "wins": 9,
+              "win_rate_pct": 45.0,
+              "mean_net_bps": -8.665,
+              "mean_net_bps_block_interval_95": [
+                -28.491,
+                17.204
+              ],
+              "profit_factor": 0.558,
+              "equity_return_pct": -1.07,
+              "realized_max_drawdown_pct": 1.352,
+              "max_loss_streak": 3,
+              "long_trades": 15,
+              "short_trades": 5,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 7,
+              "wins": 1,
+              "win_rate_pct": 14.29,
+              "mean_net_bps": -20.279,
+              "mean_net_bps_block_interval_95": [
+                -54.351,
+                13.793
+              ],
+              "profit_factor": 0.478,
+              "equity_return_pct": -0.324,
+              "realized_max_drawdown_pct": 0.619,
+              "max_loss_streak": 6,
+              "long_trades": 4,
+              "short_trades": 3,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 6,
+              "wins": 2,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": 4.015,
+              "mean_net_bps_block_interval_95": [
+                -19.71,
+                24.36
+              ],
+              "profit_factor": 0.951,
+              "equity_return_pct": -0.022,
+              "realized_max_drawdown_pct": 0.243,
+              "max_loss_streak": 2,
+              "long_trades": 3,
+              "short_trades": 3,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 6,
+              "wins": 2,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": 0.026,
+              "mean_net_bps_block_interval_95": [
+                -23.702,
+                20.379
+              ],
+              "profit_factor": 0.801,
+              "equity_return_pct": -0.094,
+              "realized_max_drawdown_pct": 0.234,
+              "max_loss_streak": 2,
+              "long_trades": 3,
+              "short_trades": 3,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 6,
+              "wins": 2,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": -11.757,
+              "mean_net_bps_block_interval_95": [
+                -35.492,
+                8.608
+              ],
+              "profit_factor": 0.478,
+              "equity_return_pct": -0.282,
+              "realized_max_drawdown_pct": 0.282,
+              "max_loss_streak": 2,
+              "long_trades": 3,
+              "short_trades": 3,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 6,
+              "wins": 2,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": 4.015,
+              "mean_net_bps_block_interval_95": [
+                -19.71,
+                24.36
+              ],
+              "profit_factor": 0.951,
+              "equity_return_pct": -0.022,
+              "realized_max_drawdown_pct": 0.243,
+              "max_loss_streak": 2,
+              "long_trades": 3,
+              "short_trades": 3,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 6,
+              "wins": 2,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": 4.015,
+              "mean_net_bps_block_interval_95": [
+                -19.71,
+                24.36
+              ],
+              "profit_factor": 0.951,
+              "equity_return_pct": -0.022,
+              "realized_max_drawdown_pct": 0.243,
+              "max_loss_streak": 2,
+              "long_trades": 3,
+              "short_trades": 3,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_context",
+          "qualified_opportunities": 25,
+          "rejected_candidates": {
+            "funding": 22,
+            "stop_distance": 18
+          },
+          "segments": {
+            "development": {
+              "trades": 17,
+              "wins": 6,
+              "win_rate_pct": 35.29,
+              "mean_net_bps": -10.358,
+              "mean_net_bps_block_interval_95": [
+                -33.549,
+                19.843
+              ],
+              "profit_factor": 0.519,
+              "equity_return_pct": -1.032,
+              "realized_max_drawdown_pct": 1.184,
+              "max_loss_streak": 3,
+              "long_trades": 12,
+              "short_trades": 5,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 5,
+              "wins": 1,
+              "win_rate_pct": 20.0,
+              "mean_net_bps": -9.238,
+              "mean_net_bps_block_interval_95": [
+                -9.238,
+                -9.238
+              ],
+              "profit_factor": 0.886,
+              "equity_return_pct": -0.038,
+              "realized_max_drawdown_pct": 0.334,
+              "max_loss_streak": 4,
+              "long_trades": 3,
+              "short_trades": 2,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 3,
+              "wins": 1,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": 11.449,
+              "mean_net_bps_block_interval_95": [
+                11.449,
+                11.449
+              ],
+              "profit_factor": 1.102,
+              "equity_return_pct": 0.029,
+              "realized_max_drawdown_pct": 0.285,
+              "max_loss_streak": 2,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 3,
+              "wins": 1,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": 7.469,
+              "mean_net_bps_block_interval_95": [
+                7.469,
+                7.469
+              ],
+              "profit_factor": 0.974,
+              "equity_return_pct": -0.007,
+              "realized_max_drawdown_pct": 0.287,
+              "max_loss_streak": 2,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 3,
+              "wins": 1,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": -4.303,
+              "mean_net_bps_block_interval_95": [
+                -4.303,
+                -4.303
+              ],
+              "profit_factor": 0.667,
+              "equity_return_pct": -0.105,
+              "realized_max_drawdown_pct": 0.317,
+              "max_loss_streak": 2,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 3,
+              "wins": 1,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": 11.449,
+              "mean_net_bps_block_interval_95": [
+                11.449,
+                11.449
+              ],
+              "profit_factor": 1.102,
+              "equity_return_pct": 0.029,
+              "realized_max_drawdown_pct": 0.285,
+              "max_loss_streak": 2,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 3,
+              "wins": 1,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": 11.449,
+              "mean_net_bps_block_interval_95": [
+                11.449,
+                11.449
+              ],
+              "profit_factor": 1.102,
+              "equity_return_pct": 0.029,
+              "realized_max_drawdown_pct": 0.285,
+              "max_loss_streak": 2,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_and_extension",
+          "qualified_opportunities": 6,
+          "rejected_candidates": {
+            "funding": 5,
+            "stop_distance": 1
+          },
+          "segments": {
+            "development": {
+              "trades": 6,
+              "wins": 2,
+              "win_rate_pct": 33.33,
+              "mean_net_bps": -3.364,
+              "mean_net_bps_block_interval_95": [
+                -31.629,
+                24.056
+              ],
+              "profit_factor": 0.712,
+              "equity_return_pct": -0.257,
+              "realized_max_drawdown_pct": 0.404,
+              "max_loss_streak": 2,
+              "long_trades": 3,
+              "short_trades": 3,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        }
+      ],
+      "development_selected_profile": null,
+      "validation_passed": false
+    },
+    {
+      "resolution": "1h",
+      "bars": 2159,
+      "profiles": [
+        {
+          "profile": "baseline",
+          "qualified_opportunities": 6,
+          "rejected_candidates": {
+            "funding": 35,
+            "stop_distance": 4
+          },
+          "segments": {
+            "development": {
+              "trades": 4,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -56.782,
+              "mean_net_bps_block_interval_95": [
+                -56.782,
+                -56.782
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.642,
+              "realized_max_drawdown_pct": 0.642,
+              "max_loss_streak": 4,
+              "long_trades": 3,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -67.761,
+              "mean_net_bps_block_interval_95": [
+                -67.761,
+                -67.761
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.245,
+              "realized_max_drawdown_pct": 0.245,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -61.257,
+              "mean_net_bps_block_interval_95": [
+                -61.257,
+                -61.257
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.244,
+              "realized_max_drawdown_pct": 0.244,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -65.235,
+              "mean_net_bps_block_interval_95": [
+                -65.235,
+                -65.235
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.235,
+              "realized_max_drawdown_pct": 0.235,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -77.003,
+              "mean_net_bps_block_interval_95": [
+                -77.003,
+                -77.003
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.235,
+              "realized_max_drawdown_pct": 0.235,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -61.257,
+              "mean_net_bps_block_interval_95": [
+                -61.257,
+                -61.257
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.244,
+              "realized_max_drawdown_pct": 0.244,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -61.257,
+              "mean_net_bps_block_interval_95": [
+                -61.257,
+                -61.257
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.244,
+              "realized_max_drawdown_pct": 0.244,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_context",
+          "qualified_opportunities": 5,
+          "rejected_candidates": {
+            "funding": 26,
+            "stop_distance": 4
+          },
+          "segments": {
+            "development": {
+              "trades": 3,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -64.792,
+              "mean_net_bps_block_interval_95": [
+                -64.792,
+                -64.792
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.564,
+              "realized_max_drawdown_pct": 0.564,
+              "max_loss_streak": 3,
+              "long_trades": 2,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -67.761,
+              "mean_net_bps_block_interval_95": [
+                -67.761,
+                -67.761
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.245,
+              "realized_max_drawdown_pct": 0.245,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -61.257,
+              "mean_net_bps_block_interval_95": [
+                -61.257,
+                -61.257
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.244,
+              "realized_max_drawdown_pct": 0.244,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -65.235,
+              "mean_net_bps_block_interval_95": [
+                -65.235,
+                -65.235
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.235,
+              "realized_max_drawdown_pct": 0.235,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -77.003,
+              "mean_net_bps_block_interval_95": [
+                -77.003,
+                -77.003
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.235,
+              "realized_max_drawdown_pct": 0.235,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -61.257,
+              "mean_net_bps_block_interval_95": [
+                -61.257,
+                -61.257
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.244,
+              "realized_max_drawdown_pct": 0.244,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -61.257,
+              "mean_net_bps_block_interval_95": [
+                -61.257,
+                -61.257
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.244,
+              "realized_max_drawdown_pct": 0.244,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_and_extension",
+          "qualified_opportunities": 2,
+          "rejected_candidates": {
+            "funding": 2
+          },
+          "segments": {
+            "development": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -83.173,
+              "mean_net_bps_block_interval_95": [
+                -83.173,
+                -83.173
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.243,
+              "realized_max_drawdown_pct": 0.243,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -67.761,
+              "mean_net_bps_block_interval_95": [
+                -67.761,
+                -67.761
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.245,
+              "realized_max_drawdown_pct": 0.245,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        }
+      ],
+      "development_selected_profile": null,
+      "validation_passed": false
+    },
+    {
+      "resolution": "4h",
+      "bars": 539,
+      "profiles": [
+        {
+          "profile": "baseline",
+          "qualified_opportunities": 4,
+          "rejected_candidates": {
+            "stop_distance": 11
+          },
+          "segments": {
+            "development": {
+              "trades": 3,
+              "wins": 3,
+              "win_rate_pct": 100.0,
+              "mean_net_bps": 54.597,
+              "mean_net_bps_block_interval_95": [
+                54.597,
+                54.597
+              ],
+              "profit_factor": null,
+              "equity_return_pct": 0.202,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 3,
+              "funding_snapshot_exposures": 9
+            },
+            "validation": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -173.259,
+              "mean_net_bps_block_interval_95": [
+                -173.259,
+                -173.259
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.234,
+              "realized_max_drawdown_pct": 0.234,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 2
+            },
+            "evaluation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_context",
+          "qualified_opportunities": 2,
+          "rejected_candidates": {
+            "stop_distance": 9
+          },
+          "segments": {
+            "development": {
+              "trades": 1,
+              "wins": 1,
+              "win_rate_pct": 100.0,
+              "mean_net_bps": 35.289,
+              "mean_net_bps_block_interval_95": [
+                35.289,
+                35.289
+              ],
+              "profit_factor": null,
+              "equity_return_pct": 0.07,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 3
+            },
+            "validation": {
+              "trades": 1,
+              "wins": 0,
+              "win_rate_pct": 0.0,
+              "mean_net_bps": -173.259,
+              "mean_net_bps_block_interval_95": [
+                -173.259,
+                -173.259
+              ],
+              "profit_factor": 0.0,
+              "equity_return_pct": -0.234,
+              "realized_max_drawdown_pct": 0.234,
+              "max_loss_streak": 1,
+              "long_trades": 1,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 2
+            },
+            "evaluation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_and_extension",
+          "qualified_opportunities": 1,
+          "rejected_candidates": {},
+          "segments": {
+            "development": {
+              "trades": 1,
+              "wins": 1,
+              "win_rate_pct": 100.0,
+              "mean_net_bps": 35.289,
+              "mean_net_bps_block_interval_95": [
+                35.289,
+                35.289
+              ],
+              "profit_factor": null,
+              "equity_return_pct": 0.07,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 1,
+              "funding_snapshot_exposures": 3
+            },
+            "validation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        }
+      ],
+      "development_selected_profile": null,
+      "validation_passed": false
+    },
+    {
+      "resolution": "1d",
+      "bars": 89,
+      "profiles": [
+        {
+          "profile": "baseline",
+          "qualified_opportunities": 0,
+          "rejected_candidates": {},
+          "segments": {
+            "development": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_context",
+          "qualified_opportunities": 0,
+          "rejected_candidates": {},
+          "segments": {
+            "development": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        },
+        {
+          "profile": "trend_and_extension",
+          "qualified_opportunities": 0,
+          "rejected_candidates": {},
+          "segments": {
+            "development": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "validation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "evaluation": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          },
+          "evaluation_stress": {
+            "slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "double_fees_slippage_3bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_1bp": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            },
+            "adverse_funding_5bps": {
+              "trades": 0,
+              "wins": 0,
+              "win_rate_pct": null,
+              "mean_net_bps": null,
+              "mean_net_bps_block_interval_95": null,
+              "profit_factor": null,
+              "equity_return_pct": 0.0,
+              "realized_max_drawdown_pct": 0.0,
+              "max_loss_streak": 0,
+              "long_trades": 0,
+              "short_trades": 0,
+              "funding_snapshot_exposures": 0
+            }
+          }
+        }
+      ],
+      "development_selected_profile": null,
+      "validation_passed": false
+    }
+  ],
+  "promotion": "NO PREDICTIVE FILTER PROMOTED: reused data and insufficient independent evidence",
+  "limitations": [
+    "No 1m/3m/5m evidence can be derived from 15m candles.",
+    "Funding scenarios are adverse assumptions, not historical funding measurements.",
+    "OHLC cannot establish execution queue, spread history, intrabar order or mark-to-market drawdown.",
+    "Bootstrap intervals on sparse dependent trades do not resolve strategy-selection bias.",
+    "No full portfolio claim across correlated timeframes; portfolios are evaluated separately."
+  ]
+}

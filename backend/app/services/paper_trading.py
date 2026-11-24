@@ -219,6 +219,38 @@ class PaperTradingEngine:
         cur_low = current_bar.get("low") if current_bar else market_state.get("last_price", 0.0)
         cur_open = current_bar.get("open") if current_bar else market_state.get("last_price", 0.0)
 
+        risk_dist = abs(entry - stop)
+
+        # Research trailing exits are disabled by default and must never infer
+        # a favorable high-before-low sequence from a completed OHLC candle.
+        if settings.ENABLE_RESEARCH_TRAILING_STOPS and current_bar is None:
+            # Dynamic Breakeven Ratchet:
+            # If position achieves +1.0R in favorable price movement, ratchet stop to entry + roundtrip fee buffer
+            fee_buffer = entry * (settings.ROUNDTRIP_TAKER_FEE_BPS / 10000.0)
+            if direction == 1 and cur_high >= entry + 1.0 * risk_dist:
+                ratchet_stop = entry + fee_buffer
+                if ratchet_stop > stop:
+                    stop = ratchet_stop
+                    conn.execute("UPDATE paper_trades SET stop_loss = ? WHERE id = ?", (stop, trade_id))
+            elif direction == -1 and cur_low <= entry - 1.0 * risk_dist:
+                ratchet_stop = entry - fee_buffer
+                if ratchet_stop < stop:
+                    stop = ratchet_stop
+                    conn.execute("UPDATE paper_trades SET stop_loss = ? WHERE id = ?", (stop, trade_id))
+
+            # Dynamic Trailing Stop:
+            # If position achieves +1.5R in favorable movement, lock in at least +0.75R profit
+            if direction == 1 and cur_high >= entry + 1.5 * risk_dist:
+                trail_stop = entry + 0.75 * risk_dist
+                if trail_stop > stop:
+                    stop = trail_stop
+                    conn.execute("UPDATE paper_trades SET stop_loss = ? WHERE id = ?", (stop, trade_id))
+            elif direction == -1 and cur_low <= entry - 1.5 * risk_dist:
+                trail_stop = entry - 0.75 * risk_dist
+                if trail_stop < stop:
+                    stop = trail_stop
+                    conn.execute("UPDATE paper_trades SET stop_loss = ? WHERE id = ?", (stop, trade_id))
+
         # Conservative fill checks
         # 1. Stop hit or ambiguous both hit
         stop_hit = (direction == 1 and cur_low <= stop) or (direction == -1 and cur_high >= stop)
@@ -227,7 +259,7 @@ class PaperTradingEngine:
         if stop_hit:
             base = min(stop, cur_open) if direction == 1 else max(stop, cur_open)
             exit_px = base * (1 - direction * slip)
-            exit_reason = "stop_or_ambiguous_both_hit"
+            exit_reason = "breakeven_or_trail_stop" if (direction == 1 and exit_px >= entry) or (direction == -1 and exit_px <= entry) else "stop_or_ambiguous_both_hit"
         elif target_hit:
             exit_px = target * (1 - direction * slip)
             exit_reason = "target"

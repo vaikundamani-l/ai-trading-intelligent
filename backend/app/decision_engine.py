@@ -8,11 +8,13 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 
 from app.config import settings
+from app.timeframes import timeframe_seconds
+from app.strategies.engine_safety import completed_history, executable_quote
 from app.database import get_risk_state, insert_alert, insert_signal
 from app.strategies.alpha1_orderflow import alpha1_strategy
 from app.strategies.alpha2_volatility import alpha2_strategy
 from app.strategies.alpha3_basis import alpha3_strategy
-from app.strategies.alpha4_dislocation import alpha4_dislocation
+from app.strategies.alpha4_dislocation import alpha4_dislocation, Alpha4RDislocationProtection
 from app.strategies.alpha5_sbr5 import sbr5_strategy
 
 logger = logging.getLogger(__name__)
@@ -97,7 +99,13 @@ class SignalDecisionEngine:
         "candle_timestamp",
     )
 
-    def __init__(self) -> None:
+    def __init__(self, resolution: str = "5m", persist: bool = True) -> None:
+        self.resolution = resolution
+        self.bar_seconds = timeframe_seconds(resolution)
+        self.persist = persist
+        self.dislocation = alpha4_dislocation if resolution == "5m" else Alpha4RDislocationProtection()
+        if resolution != "5m":
+            self.dislocation.cooldown_duration_sec = 2 * self.bar_seconds
         self.last_decision: Dict[str, Any] = self._build(
             Action.WAIT,
             "SBR-5",
@@ -189,8 +197,11 @@ class SignalDecisionEngine:
                 ["Unhandled runtime error in signal evaluation"],
                 Regime.UNKNOWN,
             )
+        decision.update(resolution=self.resolution, bar_seconds=self.bar_seconds,
+                        max_hold_bars=settings.SBR5_MAX_HOLD_BARS,
+                        max_hold_seconds=settings.SBR5_MAX_HOLD_BARS * self.bar_seconds)
         from app.suggestion_quality import assess_setup
-        decision["quality"] = assess_setup(decision, market_state, df_5m)
+        decision["quality"] = assess_setup(decision, market_state or {}, df_5m)
         self.last_decision = decision
         return decision
 
@@ -241,6 +252,25 @@ class SignalDecisionEngine:
                 Regime.DEGRADED,
             )
 
+        # Executable quotes and history must be trustworthy before any alpha.
+        try:
+            if 'best_bid' not in state or 'best_ask' not in state:
+                raise ValueError('Missing executable bid/ask')
+            bid, ask = executable_quote(state, 0)
+            quote_spread = (ask - bid) / ((ask + bid) / 2) * 10000
+            reported_spread = float(state.get('spread_bps', quote_spread))
+            if not math.isfinite(reported_spread) or reported_spread < 0:
+                raise ValueError('Invalid quoted spread')
+            if max(quote_spread, reported_spread) > settings.MAX_SIGNAL_SPREAD_BPS:
+                raise ValueError(f'Spread exceeds {settings.MAX_SIGNAL_SPREAD_BPS:g} bps signal limit')
+            if df_5m is not None and not df_5m.empty:
+                df_5m = completed_history(df_5m, self.bar_seconds, time.time())
+                if not df_5m.empty and time.time() - float(df_5m.iloc[-1]['time']) > 2 * self.bar_seconds:
+                    raise ValueError(f'Stale completed {self.resolution} candle history')
+        except (ValueError, TypeError) as exc:
+            return self._build(Action.HALT_DATA, 'EXECUTION DATA GATE', 'INVALID_EXECUTION_DATA',
+                               [str(exc)], ['Invalid quotes, spread or candle history'], Regime.UNKNOWN)
+
         # Step 3: regime detection (fails closed to UNKNOWN on bad / short data)
         regime = self._detect_regime(df_5m)
         if regime is Regime.UNKNOWN:
@@ -249,7 +279,7 @@ class SignalDecisionEngine:
                 "SYSTEM SAFETY GATE",
                 Status.INSUFFICIENT_DATA,
                 [
-                    f"Fewer than {self.MIN_REGIME_BARS} valid 5m bars "
+                    f"Fewer than {self.MIN_REGIME_BARS} valid {self.resolution} bars "
                     "(or missing/non-numeric OHLC data); regime cannot be classified"
                 ],
                 ["Indicators unreliable on insufficient history"],
@@ -258,7 +288,7 @@ class SignalDecisionEngine:
         state["market_regime"] = regime.value  # visible to downstream strategies
 
         # Step 4: Alpha-4R market dislocation protection
-        is_safe, dislocation_msg, _details = alpha4_dislocation.evaluate(df_5m, state)
+        is_safe, dislocation_msg, _details = self.dislocation.evaluate(df_5m, state)
         if not is_safe:
             return self._build(
                 Action.HALT_DATA,
@@ -294,36 +324,71 @@ class SignalDecisionEngine:
                 regime,
             )
 
-        # Step 7: primary strategy (exceptions propagate -> fail closed)
-        sbr5_res = sbr5_strategy.evaluate(df_5m, state) or {}
+        # Step 7: Multi-Strategy Quantum Evaluation Engine
+        # 7a. Alpha-2: High-momentum Volatility Compression Breakout (catches explosive expansions)
+        alpha2_res = self._safe_telemetry("alpha2", alpha2_strategy.evaluate, df_5m, state, self.resolution)
+        if not isinstance(alpha2_res, dict):
+            alpha2_res = {}
 
-        # Step 8: research telemetry (isolated)
+        # 7b. Alpha-5: Momentum Continuation & SBR-5 Sweep & Reclaim
+        sbr5_res = (sbr5_strategy.evaluate(df_5m, state) if self.resolution == "5m"
+                    else sbr5_strategy.evaluate(df_5m, state, resolution=self.resolution)) or {}
+
+        # Strategy Selection:
+        # Volatility Breakout takes priority for explosive expansion events;
+        # otherwise Momentum Trend & SBR-5 liquidity setups
+        chosen_res = None
+        if settings.ENABLE_RESEARCH_ALPHA2_SIGNALS and not settings.SCALP5_BIG_MOVE_ONLY and alpha2_res.get("is_setup"):
+            chosen_res = alpha2_res
+        elif sbr5_res.get("is_setup"):
+            chosen_res = sbr5_res
+        else:
+            chosen_res = sbr5_res  # default WAIT decision
+
+        # Step 8: Telemetry, Order-Flow & Statistical AI Confluence
+        alpha1_res = self._safe_telemetry("alpha1", alpha1_strategy.evaluate, state)
         telemetry = {
-            "alpha1_orderflow": self._safe_telemetry("alpha1", alpha1_strategy.evaluate, state),
-            "alpha2_breakout": self._safe_telemetry("alpha2", alpha2_strategy.evaluate, df_5m, state),
+            "alpha1_orderflow": alpha1_res,
+            "alpha2_breakout": alpha2_res,
             "alpha3_basis": self._safe_telemetry("alpha3", alpha3_strategy.evaluate, state),
         }
 
-        strategy_name = sbr5_res.get("strategy", "SBR-5 SWEEP & RECLAIM")
+        # Order-flow confirmation check: warn if order flow strongly opposes the setup
+        if chosen_res.get("is_setup") and isinstance(alpha1_res, dict) and not alpha1_res.get("error"):
+            ofi_score = alpha1_res.get("metrics", {}).get("composite_score", 0.0)
+            if chosen_res.get("direction") == 1 and ofi_score < -0.45:
+                chosen_res.setdefault("invalidation_risks", []).append("Adverse order flow: aggressive seller volume tape")
+            elif chosen_res.get("direction") == -1 and ofi_score > 0.45:
+                chosen_res.setdefault("invalidation_risks", []).append("Adverse order flow: aggressive buyer volume tape")
+
+        strategy_name = chosen_res.get("strategy", "SBR-5 SWEEP & RECLAIM")
 
         # No setup -> WAIT
-        if not sbr5_res.get("is_setup"):
+        if not chosen_res.get("is_setup"):
             return self._build(
                 Action.WAIT,
-                "SBR-5 SWEEP & RECLAIM",
+                f"BIG MOVE ONLY · {self.resolution}" if settings.SCALP5_BIG_MOVE_ONLY else strategy_name,
                 Status.WAIT,
-                sbr5_res.get("reasons", ["No valid setup detected on completed candle"]),
-                sbr5_res.get("invalidation_risks", []),
+                chosen_res.get("reasons", ["No valid setup detected on completed candle"]),
+                chosen_res.get("invalidation_risks", []),
                 regime,
                 research_telemetry=telemetry,
             )
 
+        expires = chosen_res.get("valid_until_ts")
+        if expires is not None and time.time() >= float(expires):
+            return self._build(
+                Action.WAIT, strategy_name, "EXPIRED_SETUP",
+                [f"The completed {self.resolution} setup entry window expired; wait for a new setup"],
+                ["Late entry after signal expiry"], regime,
+            )
+
         # Step 9: setup completeness validation
-        missing = [f for f in self.REQUIRED_SETUP_FIELDS if sbr5_res.get(f) in (None, "")]
-        if not sbr5_res.get("direction") and "direction" not in missing:
+        missing = [f for f in self.REQUIRED_SETUP_FIELDS if chosen_res.get(f) in (None, "")]
+        if not chosen_res.get("direction") and "direction" not in missing:
             missing.append("direction")  # direction 0 is not a tradable setup
         if missing:
-            logger.error("SBR-5 flagged a setup but it is incomplete; missing/invalid: %s", missing)
+            logger.error("Strategy flagged a setup but it is incomplete; missing/invalid: %s", missing)
             return self._build(
                 Action.WAIT,
                 strategy_name,
@@ -336,7 +401,7 @@ class SignalDecisionEngine:
 
         # Step 10: net-edge gate (fees + slippage already netted by the strategy)
         try:
-            net_reward_bps = float(sbr5_res.get("net_reward_bps", 0.0) or 0.0)
+            net_reward_bps = float(chosen_res.get("net_reward_bps", 0.0) or 0.0)
         except (TypeError, ValueError):
             net_reward_bps = 0.0
         if not math.isfinite(net_reward_bps):
@@ -352,28 +417,28 @@ class SignalDecisionEngine:
                     f"Setup rejected: net reward after fees/slippage is {net_reward_bps:.2f} bps "
                     f"(minimum required: {min_edge_bps:.2f} bps)"
                 ]
-                + list(sbr5_res.get("reasons", [])),
+                + list(chosen_res.get("reasons", [])),
                 ["Fee and slippage drag exceeds target edge"],
                 regime,
                 research_telemetry=telemetry,
             )
 
         decision: Dict[str, Any] = {
-            "action": sbr5_res["action"],
-            "direction": sbr5_res["direction"],
+            "action": chosen_res["action"],
+            "direction": chosen_res["direction"],
             "strategy": strategy_name,
-            "entry_price": sbr5_res["entry_price"],
-            "stop_loss": sbr5_res["stop_loss"],
-            "take_profit": sbr5_res["take_profit"],
-            "risk_reward": sbr5_res.get("risk_reward"),
-            "gross_reward_bps": sbr5_res.get("gross_reward_bps"),
-            "estimated_fees_bps": sbr5_res.get("estimated_fees_bps", 0.0),
-            "estimated_slippage_bps": sbr5_res.get("estimated_slippage_bps", 0.0),
+            "entry_price": chosen_res["entry_price"],
+            "stop_loss": chosen_res["stop_loss"],
+            "take_profit": chosen_res["take_profit"],
+            "risk_reward": chosen_res.get("risk_reward"),
+            "gross_reward_bps": chosen_res.get("gross_reward_bps"),
+            "estimated_fees_bps": chosen_res.get("estimated_fees_bps", 0.0),
+            "estimated_slippage_bps": chosen_res.get("estimated_slippage_bps", 0.0),
             "net_reward_bps": net_reward_bps,
-            "candle_timestamp": sbr5_res["candle_timestamp"],
-            "valid_until_ts": sbr5_res.get("valid_until_ts"),
-            "reasons": sbr5_res.get("reasons", []),
-            "invalidation_risks": sbr5_res.get("invalidation_risks", []),
+            "candle_timestamp": chosen_res["candle_timestamp"],
+            "valid_until_ts": chosen_res.get("valid_until_ts"),
+            "reasons": chosen_res.get("reasons", []),
+            "invalidation_risks": chosen_res.get("invalidation_risks", []),
             "market_regime": regime.value,
             "status": Status.ACTIVE_SETUP.value,
             **self._stamp(),
@@ -381,7 +446,8 @@ class SignalDecisionEngine:
         }
 
         # Step 11: persistence (never allowed to turn a valid decision into a halt)
-        self._persist_signal(decision, symbol)
+        if self.persist:
+            self._persist_signal(decision, symbol)
         return decision
 
     # ------------------------------------------------------------------

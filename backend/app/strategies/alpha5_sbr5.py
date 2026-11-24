@@ -5,11 +5,16 @@ import numpy as np
 import pandas as pd
 
 from app.config import settings
+from app.timeframes import timeframe_seconds
+from app.strategies.engine_safety import completed_history, executable_quote, maximum_stop_fraction
+from app.strategies.sbr_filters import opposing_trend_masks
+from app.strategies.momentum5 import momentum_candidates
+from app.strategies.big_move import BIG_MOVE_POLICY, substantial_target
 
-def funding_in_window(entry_unix_s: int, holding_bars: int = 5, buffer_sec: int = 120) -> bool:
+def funding_in_window(entry_unix_s: int, holding_bars: int = 5, buffer_sec: int = 120, bar_seconds: int = 300) -> bool:
     """Conservatively check if a funding snapshot lies in entry..holding window."""
     funding_sec = settings.FUNDING_INTERVAL_SEC
-    bars_sec = 300  # 5 minutes
+    bars_sec = bar_seconds
     left = entry_unix_s - buffer_sec
     right = entry_unix_s + holding_bars * bars_sec + buffer_sec
     next_snapshot = ((left - 1) // funding_sec + 1) * funding_sec
@@ -35,22 +40,35 @@ class Alpha5SBR5:
         self.max_stop_frac = settings.SBR5_MAX_STOP_FRACTION
         self.tick_size = settings.TICK_SIZE
 
-    def evaluate(self, df: pd.DataFrame, current_market: Dict[str, Any]) -> Dict[str, Any]:
-        """Evaluates completed 5m bars. Never uses unfinalized candle data."""
+    def evaluate(self, df: pd.DataFrame, current_market: Dict[str, Any], *, as_of: Optional[float] = None, resolution: str = "5m", context_profile: Optional[str] = None) -> Dict[str, Any]:
+        """Evaluate only completed bars of the requested timeframe."""
+        bar_seconds = timeframe_seconds(resolution)
+        hold_seconds = self.max_hold_bars * bar_seconds
+        hold_label = f"{hold_seconds // 60} minutes" if hold_seconds < 3600 else f"{hold_seconds / 3600:g} hours"
         min_bars = max(self.lookback, self.vol_lookback, self.atr_lookback) + 2
         if df is None or len(df) < min_bars:
             return {
                 "action": "WAIT",
                 "direction": 0,
                 "strategy": self.name,
-                "reasons": [f"Insufficient completed 5m candles: have {len(df) if df is not None else 0}, need >= {min_bars}"],
+                "reasons": [f"Insufficient completed {resolution} candles: have {len(df) if df is not None else 0}, need >= {min_bars}"],
                 "invalidation_risks": ["Historical context building"],
                 "is_setup": False
             }
 
-        d = df[df["time"] + 300 <= time.time()].copy()
+        try:
+            d = completed_history(df, bar_seconds, time.time() if as_of is None else as_of)
+        except ValueError as exc:
+            return {"action": "WAIT", "direction": 0, "strategy": self.name,
+                    "is_setup": False, "reasons": [str(exc)],
+                    "invalidation_risks": ["Invalid candle data; setup cannot be trusted"]}
         if len(d) < min_bars:
             return {"is_setup": False, "reasons": ["Awaiting completed candles"]}
+        if not d['time'].tail(min_bars).diff().dropna().eq(bar_seconds).all():
+            return {"action": "WAIT", "direction": 0, "strategy": self.name,
+                    "is_setup": False,
+                    "reasons": [f"Waiting for consecutive {resolution} candles; history has gaps or incompatible spacing"],
+                    "invalidation_risks": ["Unreliable selected-timeframe history"]}
         prev_close = d['close'].shift(1)
         true_range = pd.concat([
             d['high'] - d['low'],
@@ -114,7 +132,27 @@ class Alpha5SBR5:
             (c_close < c_open)
         )
 
+        if settings.SCALP5_BIG_MOVE_ONLY:
+            long_cond = short_cond = False
         direction = 1 if long_cond else (-1 if short_cond else 0)
+        momentum_kind = None
+        if settings.SCALP5_MOMENTUM_ENABLED:
+            momentum = momentum_candidates(d, d['atr_prior'], d['vol_prior'],
+                                           big_move_only=settings.SCALP5_BIG_MOVE_ONLY,
+                                           context_profile=context_profile or settings.SCALP5_CONTEXT_PROFILE).iloc[-1]
+            if momentum['momentum_long'] or momentum['momentum_short']:
+                direction = 1 if momentum['momentum_long'] else -1
+                momentum_kind = momentum['momentum_kind']
+
+        if direction and momentum_kind is None and settings.SBR5_TREND_FILTER:
+            block_long, block_short = opposing_trend_masks(d, d['atr_prior'])
+            if bool(block_long.iloc[-1] if direction == 1 else block_short.iloc[-1]):
+                return {
+                    "action": "WAIT", "direction": 0, "strategy": self.name,
+                    "candle_time": t, "is_setup": False,
+                    "reasons": ["Sweep/reclaim blocked: established opposing EMA9/21/50 trend with EMA21 momentum"],
+                    "invalidation_risks": ["Countertrend reversal may fail while momentum persists"],
+                }
         
         if direction == 0:
             return {
@@ -123,8 +161,10 @@ class Alpha5SBR5:
                 "strategy": self.name,
                 "candle_time": t,
                 "reasons": [
-                    f"No liquidity sweep on completed candle (Low: ${c_low:.1f}, PrevLow24: ${prev_low:.1f})",
-                    f"Volume: {c_vol:.1f} vs required {self.vol_multiplier * vol_prior:.1f} (Ratio: {c_vol/vol_prior if vol_prior > 0 else 0:.2f}x)",
+                    ("Big-move mode: waiting for at least 0.35% directional movement over 3 completed bars, a 1 ATR / 0.15% body, 1.75x volume and efficient momentum"
+                     if settings.SCALP5_BIG_MOVE_ONLY else
+                     f"No confirmed sweep/reclaim, momentum breakout or pullback continuation (close ${c_close:.1f})"),
+                    f"Volume: {c_vol:.1f} vs required {(BIG_MOVE_POLICY.min_volume_ratio if settings.SCALP5_BIG_MOVE_ONLY else self.vol_multiplier) * vol_prior:.1f} (Ratio: {c_vol/vol_prior if vol_prior > 0 else 0:.2f}x)",
                     f"Current ATR14: ${atr:.1f}"
                 ],
                 "invalidation_risks": ["Market in normal range oscillation"],
@@ -132,21 +172,37 @@ class Alpha5SBR5:
             }
 
         # We have a candidate setup! Now calculate executable price, stop, target, and risk gates.
-        best_bid = current_market.get("best_bid", c_close)
-        best_ask = current_market.get("best_ask", c_close)
+        try:
+            best_bid, best_ask = executable_quote(current_market, c_close)
+        except ValueError as exc:
+            return {"action": "WAIT", "direction": 0, "strategy": self.name,
+                    "is_setup": False, "reasons": [str(exc)],
+                    "invalidation_risks": ["Unsafe executable quote"]}
+        quote = best_ask if direction == 1 else best_bid
+        deviation = abs(quote / c_close - 1)
+        if deviation > settings.MAX_ENTRY_DEVIATION_FRACTION:
+            return {"action": "WAIT", "direction": 0, "strategy": self.name,
+                    "is_setup": False,
+                    "reasons": [f"Entry drift {deviation*100:.3f}% exceeds {settings.MAX_ENTRY_DEVIATION_FRACTION*100:.2f}% limit; do not chase"],
+                    "invalidation_risks": ["Signal price has moved before executable entry"]}
         slip = settings.DEFAULT_SLIP_PER_LEG_BPS / 10000.0
 
         # Modeled entry is next available executable ask for long, bid for short
         entry = (best_ask if direction == 1 else best_bid) * (1 + direction * slip)
         
         # Funding safety gate: check next bar entry timestamp against funding snapshots
-        entry_ts = int(current_market.get("entry_time", t + 300))
-        if funding_in_window(entry_ts, self.max_hold_bars, settings.FUNDING_BUFFER_SEC):
+        entry_ts = int(current_market.get("entry_time", t + bar_seconds))
+        # A hold spanning a full funding interval cannot avoid every snapshot.
+        # Disclose funding exposure instead of permanently blocking daily bars
+        # whose closes coincide with scheduled funding snapshots.
+        funding_exposure = hold_seconds >= settings.FUNDING_INTERVAL_SEC - 2 * settings.FUNDING_BUFFER_SEC
+        funding_bars = 0 if funding_exposure else self.max_hold_bars
+        if not funding_exposure and funding_in_window(entry_ts, funding_bars, settings.FUNDING_BUFFER_SEC, bar_seconds):
             return {
                 "action": "WAIT",
                 "direction": 0,
                 "strategy": self.name,
-                "reasons": ["Funding snapshot within the 25-minute holding window. Trade gated per research safety rules."],
+                "reasons": [f"Funding snapshot within the {hold_label} holding window or entry buffer; setup gated"],
                 "invalidation_risks": ["Adverse funding rate debit during snapshot"],
                 "is_setup": False
             }
@@ -173,12 +229,13 @@ class Alpha5SBR5:
             }
 
         stop_dist_frac = risk_move / entry
-        if stop_dist_frac > self.max_stop_frac:
+        max_stop_frac = maximum_stop_fraction(bar_seconds, atr, entry, self.max_stop_frac)
+        if stop_dist_frac > max_stop_frac:
             return {
                 "action": "WAIT",
                 "direction": 0,
                 "strategy": self.name,
-                "reasons": [f"Stop distance {stop_dist_frac*100:.2f}% exceeds maximum allowed limit {self.max_stop_frac*100:.2f}%"],
+                "reasons": [f"Stop distance {stop_dist_frac*100:.2f}% exceeds maximum allowed limit {max_stop_frac*100:.2f}% for {resolution}"],
                 "invalidation_risks": ["Excessive volatility risk"],
                 "is_setup": False
             }
@@ -198,6 +255,14 @@ class Alpha5SBR5:
         risk_bps = (risk_move / entry) * 10000.0
         net_rr = net_reward_bps / (risk_bps + total_costs_bps) if (risk_bps + total_costs_bps) > 0 else 0.0
 
+        if settings.SCALP5_BIG_MOVE_ONLY and not substantial_target(gross_reward_bps / 10000, total_costs_bps / 10000):
+            return {
+                "action": "WAIT", "direction": 0, "strategy": "BIG MOVE ONLY",
+                "is_setup": False,
+                "reasons": [f"Small target ignored: gross {gross_reward_bps:.1f} bps, net {net_reward_bps:.1f} bps; require at least 50 bps gross, 35 bps net and 3x execution costs"],
+                "invalidation_risks": ["Insufficient projected movement after costs"],
+            }
+
         if net_reward_bps <= total_costs_bps:
             return {
                 "action": "WAIT",
@@ -213,21 +278,41 @@ class Alpha5SBR5:
             f"Previous 24-bar {'low swept' if direction == 1 else 'high swept'} by {abs(c_low - prev_low if direction == 1 else c_high - prev_high):.1f} USD (> {sweep_thresh:.1f} USD)",
             f"Completed candle closed back inside range ({'reclaimed above L24' if direction == 1 else 'reclaimed below H24'})",
             f"Volume impulse confirmed: {c_vol:.1f} ({c_vol/vol_prior:.2f}x prior 24-bar mean)",
-            f"Stop distance {stop_dist_frac*100:.2f}% is within acceptable 0.15% - 0.80% bounds",
+            f"Stop distance {stop_dist_frac*100:.2f}% is within {self.min_stop_frac*100:.2f}% - {max_stop_frac*100:.2f}% bounds for {resolution}",
             f"Net reward ({net_reward_bps:.1f} bps) clears conservative 2-leg taker fee & slippage ({total_costs_bps:.1f} bps)"
         ]
 
+        if momentum_kind:
+            reasons[:2] = [
+                f"Completed {resolution} momentum {momentum_kind.lower()} confirmed in {'bullish' if direction == 1 else 'bearish'} direction",
+                "Directional candle body, close location and relative volume confirmed; no future candles used",
+            ]
+        strategy_name = f"ALPHA-5: MOMENTUM {momentum_kind}" if momentum_kind else self.name
+        if settings.SCALP5_BIG_MOVE_ONLY:
+            strategy_name += " — BIG MOVE ONLY"
+            reasons.append(f"Big-move filter passed: >= {BIG_MOVE_POLICY.min_volume_ratio:.2f}x volume and >= {100 * BIG_MOVE_POLICY.min_move_fraction:.2f}% directional movement; small setups ignored")
+
         risks = [
             "Signal expires if executable price deviates > 0.10% from modeled entry",
-            "Maximum position holding period is strictly 25 minutes (5 candles)",
+            f"Maximum holding period: {hold_label} ({self.max_hold_bars} {resolution} candles)",
             "Stop loss gap risk exists during extreme market jumps",
             "Historical bar-level backtest does not guarantee live execution fills"
         ]
 
+        if funding_exposure:
+            risks.append("Holding window crosses funding snapshots; displayed net target excludes future funding charges")
+
         return {
+            "resolution": resolution,
+            "bar_seconds": bar_seconds,
+            "max_hold_bars": self.max_hold_bars,
+            "max_hold_seconds": hold_seconds,
+            "funding_exposure": funding_exposure,
+            "context_profile": context_profile or settings.SCALP5_CONTEXT_PROFILE,
+            "max_stop_fraction": max_stop_frac,
             "action": action,
             "direction": direction,
-            "strategy": self.name,
+            "strategy": strategy_name,
             "entry_price": round(entry, 1),
             "stop_loss": round(stop, 1),
             "take_profit": round(target, 1),
@@ -237,7 +322,7 @@ class Alpha5SBR5:
             "estimated_slippage_bps": round(slip_fraction * 10000.0, 1),
             "net_reward_bps": round(net_reward_bps, 1),
             "candle_timestamp": t,
-            "valid_until_ts": t + 300 + 120,  # Valid for 2 minutes into next bar
+            "valid_until_ts": t + bar_seconds + min(120, bar_seconds),  # At most one entry candle
             "reasons": reasons,
             "invalidation_risks": risks,
             "is_setup": True

@@ -1,12 +1,17 @@
 import math
 import time
 from typing import Dict, Any, List, Tuple
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 
 from app.config import settings
 from app.services.delta_market_data import market_data_service
+from app.strategies.sbr_filters import opposing_trend_masks
+from app.strategies.momentum5 import momentum_candidates
+from app.strategies.big_move import substantial_target
+from app.strategies.engine_safety import completed_history, maximum_stop_fraction, resolve_bar_exit
+from app.timeframes import timeframe_seconds
 
 @dataclass(frozen=True)
 class BacktestConfig:
@@ -33,11 +38,16 @@ class BacktestConfig:
     slip_per_leg_bps: float = 1.0
     tick_size: float = 0.5
     funding_buffer_seconds: int = 120
+    trend_filter: bool = True
+    momentum_enabled: bool = True
+    big_move_only: bool = True
+    resolution: str = "5m"
+    context_profile: str = "baseline"
 
-def funding_in_window(entry_unix_s: int, holding_bars: int, buffer_sec: int) -> bool:
+def funding_in_window(entry_unix_s: int, holding_bars: int, buffer_sec: int, bar_seconds: int = 300) -> bool:
     funding_sec = 8 * 3600
     left = entry_unix_s - buffer_sec
-    right = entry_unix_s + holding_bars * 300 + buffer_sec
+    right = entry_unix_s + holding_bars * bar_seconds + buffer_sec
     next_snapshot = ((left - 1) // funding_sec + 1) * funding_sec
     return next_snapshot <= right
 
@@ -73,6 +83,20 @@ def compute_sbr5_signals(df: pd.DataFrame, c: BacktestConfig) -> pd.DataFrame:
         (d['close'] < d['open'])
     ).fillna(False)
 
+    if c.trend_filter:
+        block_long, block_short = opposing_trend_masks(d, atr)
+        d['long_signal'] &= ~block_long
+        d['short_signal'] &= ~block_short
+
+    if c.big_move_only:
+        # Pure sweep reversals are excluded from this momentum-only mode.
+        d['long_signal'] = False
+        d['short_signal'] = False
+    if c.momentum_enabled:
+        momentum = momentum_candidates(d, atr, d['vol_prior'], big_move_only=c.big_move_only, context_profile=c.context_profile)
+        d['long_signal'] |= momentum['momentum_long']
+        d['short_signal'] |= momentum['momentum_short']
+
     return d
 
 def simulate_trade(d: pd.DataFrame, signal_idx: int, direction: int, c: BacktestConfig, equity: float) -> dict | None:
@@ -83,7 +107,14 @@ def simulate_trade(d: pd.DataFrame, signal_idx: int, direction: int, c: Backtest
     entry_bar = d.iloc[i]
     entry_t = int(entry_bar['dt'].timestamp())
     
-    if funding_in_window(entry_t, c.max_hold_bars, c.funding_buffer_seconds):
+    bar_seconds = timeframe_seconds(c.resolution)
+    # Reject mislabelled/gapped data, and never execute across a missing entry bar.
+    if int(entry_bar['time']) != int(sig['time']) + bar_seconds:
+        return None
+    if abs(float(entry_bar['open']) / float(sig['close']) - 1) > settings.MAX_ENTRY_DEVIATION_FRACTION:
+        return None
+    long_hold = c.max_hold_bars * bar_seconds >= settings.FUNDING_INTERVAL_SEC - 2 * c.funding_buffer_seconds
+    if not long_hold and funding_in_window(entry_t, c.max_hold_bars, c.funding_buffer_seconds, bar_seconds):
         return None
 
     slip = c.slip_per_leg_bps / 10000.0
@@ -99,12 +130,20 @@ def simulate_trade(d: pd.DataFrame, signal_idx: int, direction: int, c: Backtest
         stop = math.ceil(stop / c.tick_size) * c.tick_size
 
     risk_move = direction * (entry - stop)
-    if risk_move <= 0 or (risk_move / entry) > c.maximum_stop_fraction:
+    stop_ceiling = maximum_stop_fraction(bar_seconds, float(sig["atr_prior"]), entry, c.maximum_stop_fraction)
+    if risk_move <= 0 or (risk_move / entry) > stop_ceiling:
         return None
 
     target = entry + direction * c.target_r * risk_move
     target = (math.ceil(target / c.tick_size) * c.tick_size if direction == 1
               else math.floor(target / c.tick_size) * c.tick_size)
+
+    cost_fraction = 2 * c.fee_taker_fraction * c.gst_multiplier + 2 * slip
+    gross_target_fraction = abs(target - entry) / entry
+    if gross_target_fraction - cost_fraction <= cost_fraction:
+        return None
+    if c.big_move_only and not substantial_target(gross_target_fraction, cost_fraction):
+        return None
 
     risk_per_notional = (risk_move / entry) + (2 * c.fee_taker_fraction * c.gst_multiplier) + (2 * slip)
     notional = min(equity * c.max_risk_fraction / risk_per_notional, equity * c.max_notional_equity_multiple)
@@ -120,22 +159,16 @@ def simulate_trade(d: pd.DataFrame, signal_idx: int, direction: int, c: Backtest
 
     for j in range(i, min(i + c.max_hold_bars, len(d))):
         bar = d.iloc[j]
-        opened_past_stop = (direction == 1 and bar['open'] <= stop) or (direction == -1 and bar['open'] >= stop)
-        stop_hit = (direction == 1 and bar['low'] <= stop) or (direction == -1 and bar['high'] >= stop)
-        target_hit = (direction == 1 and bar['high'] >= target) or (direction == -1 and bar['low'] <= target)
-
-        if opened_past_stop or stop_hit:
-            base = min(stop, float(bar['open'])) if direction == 1 else max(stop, float(bar['open']))
-            exit_px = base * (1.0 - direction * slip)
-            exit_reason = 'stop_or_ambiguous_both_hit'
-        elif target_hit:
-            exit_px = float(target) * (1.0 - direction * slip)
-            exit_reason = 'target'
-        elif j == min(i + c.max_hold_bars, len(d)) - 1:
-            exit_px = float(bar['close']) * (1.0 - direction * slip)
-            exit_reason = 'time_limit_25m'
-        else:
+        if int(bar['time']) != entry_t + (j - i) * bar_seconds:
+            return None  # Missing bars cannot reconstruct an outcome.
+        result = resolve_bar_exit(bar, direction, stop, target,
+                                  timeout=j == min(i + c.max_hold_bars, len(d)) - 1)
+        if result is None:
             continue
+        base, reason = result
+        exit_px = base * (1 - direction * slip)
+        exit_reason = {'STOP_HIT': 'stop_or_ambiguous_both_hit', 'TARGET_HIT': 'target',
+                       'TIME_EXIT': 'sample_boundary' if j < i + c.max_hold_bars - 1 else 'time_limit'}[reason]
         exit_i = j
         break
 
@@ -171,7 +204,15 @@ def run_sbr5_backtest(df: pd.DataFrame, c: BacktestConfig = BacktestConfig(), in
     if df is None or len(df) < 50:
         return {"error": "Insufficient historical candles for backtest"}
 
-    d = compute_sbr5_signals(df, c)
+    try:
+        valid = completed_history(df, timeframe_seconds(c.resolution), time.time())
+    except ValueError as exc:
+        return {"error": str(exc)}
+    if len(valid) < 50:
+        return {"error": "Insufficient completed candles for backtest"}
+    if 'dt' not in valid:
+        valid['dt'] = pd.to_datetime(valid['time'], unit='s', utc=True)
+    d = compute_sbr5_signals(valid, c)
     equity = initial_equity
     peak = initial_equity
     records = []
@@ -228,6 +269,7 @@ def run_sbr5_backtest(df: pd.DataFrame, c: BacktestConfig = BacktestConfig(), in
 
     if not records:
         return {
+            "resolution": c.resolution,
             "trades_count": 0,
             "start_equity": initial_equity,
             "end_equity": round(equity, 2),
@@ -258,13 +300,13 @@ def run_sbr5_backtest(df: pd.DataFrame, c: BacktestConfig = BacktestConfig(), in
     # Cost Sensitivity Analysis (Stress test: 0 bp, 1 bp, 2 bp, 3 bp, 5 bp)
     sensitivity = []
     for slip_bps in [0.0, 1.0, 2.0, 3.0, 5.0]:
-        c_slip = replace(c, slip_per_leg_bps=slip_bps)
         # Fast approximation of net effect across trades
         add_slip_frac = 2 * (slip_bps - c.slip_per_leg_bps) / 10000.0
         adj_pnl = sum(t['pnl_usd'] - (t['notional_usd'] * add_slip_frac) for t in records)
         adj_ret = (adj_pnl / initial_equity) * 100.0
         sensitivity.append({
             "slippage_bps": slip_bps,
+            "method": "Fixed-fill linear approximation; see research runner for full stress simulation",
             "net_return_pct": round(adj_ret, 2),
             "total_pnl_usd": round(adj_pnl, 2)
         })
@@ -281,6 +323,9 @@ def run_sbr5_backtest(df: pd.DataFrame, c: BacktestConfig = BacktestConfig(), in
         hourly[h]["pnl"] = round(hourly[h]["pnl"] + t["pnl_usd"], 2)
 
     return {
+        "resolution": c.resolution,
+        "funding_included": False,
+        "drawdown_basis": "realized equity, not intrabar mark-to-market",
         "trades_count": len(records),
         "start_equity": initial_equity,
         "end_equity": round(equity, 2),

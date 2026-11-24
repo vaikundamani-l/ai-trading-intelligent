@@ -69,6 +69,25 @@ get_pid_by_port() {
     fi
 }
 
+frontend_build_is_current() {
+    local frontend_dir="$PROJECT_DIR/frontend"
+    local build_id="$frontend_dir/.next/BUILD_ID"
+    [ -f "$build_id" ] || return 1
+
+    # next start serves compiled output; an existing BUILD_ID does not mean
+    # that output includes the latest source, assets or configuration.
+    local changed
+    changed=$(find "$frontend_dir/src" "$frontend_dir/public" -type f -newer "$build_id" -print -quit)
+    [ -z "$changed" ] || return 1
+    local input
+    for input in package.json package-lock.json next.config.ts next.config.js next.config.mjs tsconfig.json postcss.config.mjs .env .env.local .env.production .env.production.local; do
+        if [ -f "$frontend_dir/$input" ] && [ "$frontend_dir/$input" -nt "$build_id" ]; then
+            return 1
+        fi
+    done
+    return 0
+}
+
 start_services() {
     local mode="${1:-}"
     echo -e "${BOLD}${CYAN}=== Starting BTC Quantum Intelligence Platform ===${NC}"
@@ -112,9 +131,12 @@ start_services() {
             setsid "$NPM_BIN" run dev > "$FRONTEND_LOG" 2>&1 < /dev/null &
         else
             # Default to production-optimized mode
-            if [ ! -f "$PROJECT_DIR/frontend/.next/BUILD_ID" ]; then
-                echo -e "[Frontend] Building Next.js production bundle first..."
-                "$NPM_BIN" run build > "$FRONTEND_LOG" 2>&1
+            if ! frontend_build_is_current; then
+                echo -e "[Frontend] Source changed or build missing. Rebuilding the current interface..."
+                if ! "$NPM_BIN" run build > "$FRONTEND_LOG" 2>&1; then
+                    echo -e "${RED}[Frontend] Build failed. See $FRONTEND_LOG. The outdated interface will not be started.${NC}"
+                    return 1
+                fi
             fi
             echo -e "[2/2] Starting Next.js Frontend in PRODUCTION mode on port 3000..."
             export NODE_ENV=production

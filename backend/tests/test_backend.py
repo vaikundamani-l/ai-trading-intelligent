@@ -34,6 +34,10 @@ def make_test_candles(rows=150):
 
 class TestBTCQuantumBackend(unittest.TestCase):
     def setUp(self):
+        from unittest.mock import patch
+        mode = patch.object(settings, 'SCALP5_BIG_MOVE_ONLY', False)
+        mode.start()
+        self.addCleanup(mode.stop)
         self.sbr5 = Alpha5SBR5()
         self.dislocation = Alpha4RDislocationProtection()
         self.orderflow = Alpha1ROrderFlow()
@@ -94,7 +98,7 @@ class TestBTCQuantumBackend(unittest.TestCase):
         df = make_test_candles()
         # Bar 51 hits both stop (9900) and target (10200)
         df.loc[51, ['open', 'high', 'low', 'close']] = [10006.0, 10200.0, 9900.0, 10000.0]
-        c = BacktestConfig()
+        c = BacktestConfig(big_move_only=False)
         d_sig = compute_sbr5_signals(df, c)
         trade = simulate_trade(d_sig, 50, 1, c, 10000.0)
         self.assertIsNotNone(trade)
@@ -131,10 +135,22 @@ class TestBTCQuantumBackend(unittest.TestCase):
 
     def test_backtest_execution_on_synthetic_data(self):
         df = make_test_candles()
-        res = run_sbr5_backtest(df, BacktestConfig(), initial_equity=10000.0)
+        res = run_sbr5_backtest(df, BacktestConfig(big_move_only=False), initial_equity=10000.0)
         self.assertGreaterEqual(res["trades_count"], 1)
         self.assertIn("cost_sensitivity", res)
         self.assertEqual(len(res["cost_sensitivity"]), 5)
+
+    def test_candles_endpoint_passed_signals_marking(self):
+        from unittest.mock import patch
+        from app.api.endpoints import get_candles
+        df = make_test_candles()
+        with patch('app.services.delta_market_data.market_data_service.fetch_candles_rest', return_value=df):
+            res = get_candles(resolution='5m', limit=150)
+            self.assertIn('passed_signals', res)
+            self.assertGreaterEqual(len(res['passed_signals']), 1)
+            # The synthetic sweep-and-reclaim bar at index 50 should have BUY signal
+            self.assertEqual(res['candles'][50]['signal'], 'BUY')
+            self.assertIsNotNone(res['candles'][50]['signal_price'])
 
 if __name__ == '__main__':
     unittest.main()

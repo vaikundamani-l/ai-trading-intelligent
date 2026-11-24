@@ -3,38 +3,18 @@
 import React, { useState } from 'react';
 import { MarketState } from '@/lib/types';
 import { apiFetch } from '@/lib/api';
-import {
-  Activity,
-  Radio,
-  Clock,
-  ShieldAlert,
-  SlidersHorizontal,
-  Flame,
-  LineChart,
-  BrainCircuit,
-  Layers,
-  History,
-  Terminal,
-  RotateCcw,
-  Play,
-  Pause,
-  BookOpen,
-} from 'lucide-react';
+import { Activity, Clock, Flame, Play, Pause } from 'lucide-react';
 
 interface NavbarProps {
   market: MarketState | null;
   utcTime: string;
   istTime: string;
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   market,
   utcTime,
   istTime,
-  activeTab,
-  setActiveTab,
 }) => {
   const connStatus = market?.connection_status || 'DISCONNECTED';
   const lastPrice = market?.last_price || 0;
@@ -179,7 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
                 : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/25'
             }`}
-            title="Start or Stop strategy signal and paper trading execution"
+            title="Pause or resume the strategy signal engine"
           >
             {isEnginePaused ? (
               <>
@@ -196,47 +176,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tabs Bar */}
-      <nav className="px-4 flex items-center gap-1 overflow-x-auto scrollbar-none bg-[#0e121a]">
-        {[
-          { id: 'dashboard', label: 'Terminal', icon: Terminal },
-          { id: 'predictions', label: 'AI Predictions', icon: BrainCircuit },
-          { id: 'strategies', label: 'Strategy Lab', icon: Layers },
-          { id: 'orderflow', label: 'Order Flow', icon: Radio },
-          { id: 'backtest', label: 'Backtesting', icon: LineChart },
-          { id: 'papertrading', label: 'Paper Trading', icon: RotateCcw },
-          { id: 'signals', label: 'Signal History', icon: History },
-          { id: 'risk', label: 'Risk Center', icon: ShieldAlert },
-          { id: 'settings', label: 'Settings', icon: SlidersHorizontal },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-medium tracking-wide transition-all border-b-2 whitespace-nowrap ${
-                isActive
-                  ? 'border-cyan-400 text-cyan-400 bg-cyan-500/5'
-                  : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-[#121721]'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          );
-        })}
-        <a
-          href="/about.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 px-3.5 py-2.5 text-xs font-medium tracking-wide border-b-2 border-transparent text-cyan-400 hover:text-cyan-300 hover:bg-[#121721] whitespace-nowrap transition-all"
-          title="Open complete architectural & operational project guide with Tamil explanation"
-        >
-          <BookOpen className="w-4 h-4 text-cyan-400" />
-          About Project
-        </a>
-      </nav>
     </header>
   );
 };

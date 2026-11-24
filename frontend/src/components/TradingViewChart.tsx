@@ -16,11 +16,22 @@ import {
   SeriesDataItemTypeMap,
   IPriceLine,
   TickMarkType,
+  createSeriesMarkers,
+  ISeriesMarkersPluginApi,
+  SeriesMarker,
 } from 'lightweight-charts';
-import { CandleData, SignalDecision, TimeframeTrend, LiveTrendInfo } from '@/lib/types';
+import { CandleData, SignalDecision, TimeframeTrend, LiveTrendInfo, PassedSignal } from '@/lib/types';
 import { apiFetch } from '@/lib/api';
+import { liveCandleIndicators } from '@/lib/chartIndicators';
 import { formatISTDate, formatISTTime, formatISTFull, getNowISTString } from '@/lib/dateUtils';
 import { Layers, RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+
+interface SignalDiagnostics {
+  candidate_count: number;
+  qualified_count: number;
+  filtered_count: number;
+  filtered_reasons: Record<string, number>;
+}
 
 interface TradingViewChartProps {
   timeframe: string;
@@ -72,6 +83,20 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const targetLineRef = useRef<IPriceLine | null>(null);
   const entryLineRef = useRef<IPriceLine | null>(null);
 
+  // Series markers primitive for passed candles & live signals
+  const seriesMarkersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
+  const candlesDataRef = useRef<CandleData[]>([]);
+  const selectedTimeframeRef = useRef(timeframe);
+  useEffect(() => { selectedTimeframeRef.current = timeframe; }, [timeframe]);
+  const isFetchingRef = useRef<boolean>(false);
+  const hasFittedRef = useRef<Record<string, boolean>>({});
+  const [hasCandleData, setHasCandleData] = useState(false);
+  const [passedSignalsState, setPassedSignalsState] = useState<{ timeframe: string; signals: PassedSignal[] }>({ timeframe, signals: [] });
+  const passedSignalsList = passedSignalsState.timeframe === timeframe ? passedSignalsState.signals : [];
+
+  const [diagnosticsState, setDiagnosticsState] = useState<{ timeframe: string; data: SignalDiagnostics | null }>({ timeframe, data: null });
+  const diagnostics = diagnosticsState.timeframe === timeframe ? diagnosticsState.data : null;
+
   // Active forming bar tracking
   const activeBarRef = useRef<{
     time: number;
@@ -81,12 +106,6 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     close: number;
     volume: number;
   } | null>(null);
-
-  // Dynamic live indicator state for 1s calculations
-  const liveEma9Ref = useRef<number>(0);
-  const liveEma21Ref = useRef<number>(0);
-  const liveEma50Ref = useRef<number>(0);
-  const liveRsiRef = useRef<number>(50);
 
   // Multi-timeframe trend matrix
   const [multiTrends, setMultiTrends] = useState<Record<string, TimeframeTrend>>({});
@@ -116,6 +135,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     bollinger: false,
     sbrLevels: true,
     volume: true,
+    signals: true,
   });
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -182,18 +202,170 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     };
   }, [fetchMultiTrends]);
 
+  // Synchronize candlestick markers for passed candles & live signals
+  const updateMarkers = useCallback((candlesToUse?: CandleData[]) => {
+    if (isDisposedRef.current || !seriesMarkersRef.current) return;
+
+    if (!overlays.signals) {
+      try {
+        seriesMarkersRef.current.setMarkers([]);
+      } catch {
+        // Ignore
+      }
+      return;
+    }
+
+    const markers: SeriesMarker<Time>[] = [];
+    const sourceCandles = candlesToUse || candlesDataRef.current;
+
+    // 1. Mark historical candles where strategy setup passed (BUY or SELL)
+    for (const c of sourceCandles) {
+      if (c.signal === 'BUY') {
+        let tag = 'BUY';
+        let color = '#10b981';
+        if (c.signal_outcome === 'TARGET_HIT') {
+          tag = `BUY 🎯 ${c.signal_pnl_r ?? '?'}R net`;
+          color = '#10b981';
+        } else if (c.signal_outcome === 'BREAKEVEN_WIN') {
+          tag = `BUY 🔒 BE (+${c.signal_pnl_r ?? '0.1'}R)`;
+          color = '#38bdf8';
+        } else if (c.signal_outcome === 'STOP_HIT') {
+          tag = `BUY 🛑 ${c.signal_pnl_r ?? '?'}R net`;
+          color = '#ef4444';
+        } else if (c.signal_outcome === 'TIME_EXIT') {
+          tag = `BUY ⏱ ${c.signal_pnl_r ?? '?'}R net`;
+          color = '#f59e0b';
+        } else if (c.signal_outcome === 'ACTIVE') {
+          tag = 'BUY ⏳ ACTIVE';
+          color = '#06b6d4';
+        }
+
+        markers.push({
+          id: `hist-buy-${c.time}`,
+          time: c.time as Time,
+          position: 'belowBar',
+          shape: 'arrowUp',
+          color,
+          text: tag,
+          size: 2,
+        });
+      } else if (c.signal === 'SELL') {
+        let tag = 'SELL';
+        let color = '#ef4444';
+        if (c.signal_outcome === 'TARGET_HIT') {
+          tag = `SELL 🎯 ${c.signal_pnl_r ?? '?'}R net`;
+          color = '#10b981';
+        } else if (c.signal_outcome === 'BREAKEVEN_WIN') {
+          tag = `SELL 🔒 BE (+${c.signal_pnl_r ?? '0.1'}R)`;
+          color = '#38bdf8';
+        } else if (c.signal_outcome === 'STOP_HIT') {
+          tag = `SELL 🛑 ${c.signal_pnl_r ?? '?'}R net`;
+          color = '#ef4444';
+        } else if (c.signal_outcome === 'TIME_EXIT') {
+          tag = `SELL ⏱ ${c.signal_pnl_r ?? '?'}R net`;
+          color = '#f59e0b';
+        } else if (c.signal_outcome === 'ACTIVE') {
+          tag = 'SELL ⏳ ACTIVE';
+          color = '#06b6d4';
+        }
+
+        markers.push({
+          id: `hist-sell-${c.time}`,
+          time: c.time as Time,
+          position: 'aboveBar',
+          shape: 'arrowDown',
+          color,
+          text: tag,
+          size: 2,
+        });
+      }
+    }
+
+    // 2. Mark the live trade passed (current active BUY / SELL setup)
+    if (signal && (signal.resolution || '5m') === timeframe && (signal.action === 'BUY' || signal.action === 'SELL')
+        && signal.valid_until_ts != null && signal.valid_until_ts > Date.now() / 1000) {
+      const isLiveBuy = signal.action === 'BUY';
+      const liveTime =
+        signal.candle_timestamp ||
+        activeBarRef.current?.time ||
+        (sourceCandles.length > 0 ? sourceCandles[sourceCandles.length - 1].time : null);
+
+      if (liveTime) {
+        // If there was already a historical marker on this exact bar, remove it so live marker takes priority
+        const existingIdx = markers.findIndex((m) => Number(m.time) === liveTime);
+        if (existingIdx !== -1) {
+          markers.splice(existingIdx, 1);
+        }
+        markers.push({
+          id: `live-${isLiveBuy ? 'buy' : 'sell'}-${liveTime}`,
+          time: liveTime as Time,
+          position: isLiveBuy ? 'belowBar' : 'aboveBar',
+          shape: isLiveBuy ? 'arrowUp' : 'arrowDown',
+          color: isLiveBuy ? '#34d399' : '#f87171',
+          text: isLiveBuy ? 'LIVE BUY ↗' : 'LIVE SELL ↘',
+          size: 2,
+        });
+      }
+    }
+
+    // Lightweight charts requires markers to be strictly ordered by time
+    markers.sort((a, b) => Number(a.time) - Number(b.time));
+
+    try {
+      seriesMarkersRef.current.setMarkers(markers);
+    } catch (e) {
+      console.warn('Failed to apply series markers:', e);
+    }
+  }, [signal, overlays.signals, timeframe]);
+
+  const updateMarkersRef = useRef(updateMarkers);
+  useEffect(() => {
+    updateMarkersRef.current = updateMarkers;
+  }, [updateMarkers]);
+
+  // Update markers whenever signal or overlays.signals toggle changes
+  useEffect(() => {
+    updateMarkers();
+  }, [updateMarkers]);
+
   // Fetch candles from API for the selected timeframe
   const fetchCandles = useCallback(async () => {
-    if (isDisposedRef.current) return;
+    if (isDisposedRef.current || isFetchingRef.current) return;
+    isFetchingRef.current = true;
     setIsLoading(true);
     try {
-      const { data, ok } = await apiFetch<{candles: CandleData[]; trend?: import('@/lib/types').TrendInfo}>(`/api/market/candles?resolution=${timeframe}&limit=250`);
+      const { data, ok } = await apiFetch<{
+        candles: CandleData[];
+        trend?: import('@/lib/types').TrendInfo;
+        passed_signals?: PassedSignal[];
+        signal_diagnostics?: SignalDiagnostics;
+      }>(`/api/market/candles?resolution=${timeframe}&limit=250`);
+      if (timeframe !== selectedTimeframeRef.current) return;
       if (isDisposedRef.current || !chartRef.current || !candleSeriesRef.current) {
         setIsLoading(false);
         return;
       }
 
       const rawCandles: CandleData[] = ok && data?.candles ? data.candles : [];
+      candlesDataRef.current = rawCandles;
+      setHasCandleData(rawCandles.length > 0);
+      setDiagnosticsState({ timeframe, data: data?.signal_diagnostics ?? null });
+      if (data?.passed_signals) {
+        setPassedSignalsState({ timeframe, signals: data.passed_signals });
+      } else {
+        const extracted: PassedSignal[] = rawCandles
+          .filter((c) => c.signal === 'BUY' || c.signal === 'SELL')
+          .map((c) => ({
+            time: c.time,
+            action: c.signal as 'BUY' | 'SELL',
+            strategy: c.signal_strategy || 'ALPHA-5: SBR-5',
+            price: c.signal_price || c.close,
+            stop_loss: c.signal_stop,
+            take_profit: c.signal_target,
+          }));
+        setPassedSignalsState({ timeframe, signals: extracted });
+      }
+
       if (rawCandles.length === 0) {
         setIsLoading(false);
         return;
@@ -255,6 +427,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         rawCandles.filter((c) => c.sbr_prev_low != null).map((c) => ({ time: c.time as Time, value: c.sbr_prev_low! }))
       );
 
+      // Render markers for passed candles and active live signals
+      updateMarkersRef.current(rawCandles);
+
       // Initialize the active forming bar tracker with the latest candle
       const lastCandle = rawCandles[rawCandles.length - 1];
       setAtrValue(lastCandle.atr ?? null);
@@ -267,10 +442,6 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         volume: lastCandle.volume,
       };
 
-      liveEma9Ref.current = lastCandle.ema9 ?? lastCandle.close;
-      liveEma21Ref.current = lastCandle.ema21 ?? lastCandle.close;
-      liveEma50Ref.current = lastCandle.ema50 ?? lastCandle.close;
-      liveRsiRef.current = lastCandle.rsi ?? 50.0;
 
       // Initialize trend state from server if present
       if (data?.trend) {
@@ -291,19 +462,28 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         });
       }
 
-      if (chartRef.current) {
+      if (chartRef.current && !hasFittedRef.current[timeframe]) {
         chartRef.current.timeScale().fitContent();
+        hasFittedRef.current[timeframe] = true;
       }
     } catch (err) {
       console.error('Failed to load chart candles:', err);
     } finally {
+      isFetchingRef.current = false;
       if (!isDisposedRef.current) {
         setIsLoading(false);
       }
     }
   }, [timeframe]);
 
-  // Real-time 1-Second Candle and Dynamic Trend Tick Calculation
+  const fetchCandlesRef = useRef(fetchCandles);
+  useEffect(() => { fetchCandlesRef.current = fetchCandles; }, [fetchCandles]);
+  useEffect(() => {
+    const timer = setInterval(() => { void fetchCandles(); }, 5000);
+    return () => clearInterval(timer);
+  }, [fetchCandles]);
+
+  // Real-time candle and provisional candle indicator calculation
   useEffect(() => {
     if (
       isDisposedRef.current ||
@@ -321,7 +501,12 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
     // Check if the current bar has completed and a new bar needs to be spawned
     if (nowSec >= activeBarRef.current.time + barDuration) {
-      targetTime = activeBarRef.current.time + barDuration;
+      // Commit the last provisional close once before starting the next bar.
+      const completed = activeBarRef.current;
+      const existing = candlesDataRef.current.findIndex(c => c.time === completed.time);
+      if (existing >= 0) candlesDataRef.current[existing] = { ...candlesDataRef.current[existing], ...completed };
+      else candlesDataRef.current.push({ ...completed });
+      targetTime = Math.floor(nowSec / barDuration) * barDuration;
       activeBarRef.current = {
         time: targetTime,
         open: lastPrice,
@@ -344,22 +529,10 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       close: activeBarRef.current.close,
     });
 
-    // Dynamic EMA smoothing update
-    const prevEma9 = liveEma9Ref.current || lastPrice;
-    const prevEma21 = liveEma21Ref.current || lastPrice;
-    const prevEma50 = liveEma50Ref.current || lastPrice;
-
-    const k9 = 2.0 / (9.0 + 1.0);
-    const k21 = 2.0 / (21.0 + 1.0);
-    const k50 = 2.0 / (50.0 + 1.0);
-
-    const curEma9 = lastPrice * k9 + prevEma9 * (1.0 - k9);
-    const curEma21 = lastPrice * k21 + prevEma21 * (1.0 - k21);
-    const curEma50 = lastPrice * k50 + prevEma50 * (1.0 - k50);
-
-    liveEma9Ref.current = curEma9;
-    liveEma21Ref.current = curEma21;
-    liveEma50Ref.current = curEma50;
+    const indicators = liveCandleIndicators(candlesDataRef.current, lastPrice, targetTime);
+    const curEma9 = indicators.ema9;
+    const curEma21 = indicators.ema21;
+    const curEma50 = indicators.ema50;
 
     safeUpdate(ema9Ref.current, { time: targetTime as Time, value: curEma9 });
     safeUpdate(ema21Ref.current, { time: targetTime as Time, value: curEma21 });
@@ -368,7 +541,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     // Dynamic 1-Second Trend Direction Calculation
     const openPx = activeBarRef.current.open;
     const momPct = openPx > 0 ? ((lastPrice - openPx) / openPx) * 100 : 0;
-    const curRsi = liveRsiRef.current;
+    const curRsi = indicators.rsi;
 
     let dir: LiveTrendInfo['direction'] = 'RANGING';
     let label = 'RANGING';
@@ -512,6 +685,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     });
     candleSeriesRef.current = candleSeries;
 
+    // Series markers primitive for passed candles & live signals
+    seriesMarkersRef.current = createSeriesMarkers(candleSeries, []);
+
     // Overlay Lines
     ema9Ref.current = chart.addSeries(LineSeries, {
       color: '#3b82f6',
@@ -587,13 +763,25 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       }
       const data = param.seriesData.get(candleSeries) as import('lightweight-charts').CandlestickData<Time> | undefined;
       if (data) {
+        const tSec = Number(param.time);
+        const matched = candlesDataRef.current.find((c) => c.time === tSec);
         setHoveredCandle({
-          time: Number(param.time),
+          time: tSec,
           open: data.open,
           high: data.high,
           low: data.low,
           close: data.close,
-          volume: 0,
+          volume: matched?.volume ?? 0,
+          signal: matched?.signal ?? null,
+          signal_action: matched?.signal_action ?? null,
+          signal_strategy: matched?.signal_strategy ?? null,
+          signal_price: matched?.signal_price ?? null,
+          signal_stop: matched?.signal_stop ?? null,
+          signal_target: matched?.signal_target ?? null,
+          signal_outcome: matched?.signal_outcome ?? null,
+          signal_pnl_r: matched?.signal_pnl_r ?? null,
+          signal_exit_price: matched?.signal_exit_price ?? null,
+          signal_exit_bars: matched?.signal_exit_bars ?? null,
         });
       }
     });
@@ -613,7 +801,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     };
     window.addEventListener('resize', handleResize);
 
-    fetchCandles();
+    void fetchCandlesRef.current();
 
     return () => {
       isDisposedRef.current = true;
@@ -623,6 +811,15 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       safeRemovePriceLine(stopLineRef);
       safeRemovePriceLine(targetLineRef);
       safeRemovePriceLine(entryLineRef);
+
+      if (seriesMarkersRef.current) {
+        try {
+          seriesMarkersRef.current.detach();
+        } catch {
+          // Ignore
+        }
+        seriesMarkersRef.current = null;
+      }
 
       try {
         chart.remove();
@@ -644,7 +841,24 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       sbrPrevLowRef.current = null;
       activeBarRef.current = null;
     };
-  }, [fetchCandles]);
+  }, []); // Chart instance created strictly once on mount
+
+  // Fetch candles only when timeframe actively changes
+  const prevTimeframeRef = useRef(timeframe);
+  useEffect(() => {
+    if (prevTimeframeRef.current !== timeframe) {
+      prevTimeframeRef.current = timeframe;
+      // Clear the previous timeframe's data and markers while the new request loads.
+      candlesDataRef.current = [];
+      activeBarRef.current = null;
+      seriesMarkersRef.current?.setMarkers([]);
+      for (const series of [candleSeriesRef.current, volumeSeriesRef.current,
+        ema9Ref.current, ema21Ref.current, ema50Ref.current, ema200Ref.current,
+        vwapRef.current, bbUpperRef.current, bbLowerRef.current,
+        sbrPrevHighRef.current, sbrPrevLowRef.current]) series?.setData([]);
+      fetchCandles();
+    }
+  }, [timeframe, fetchCandles]);
 
   // Update visibility of overlay series
   useEffect(() => {
@@ -771,7 +985,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
             {/* 1s Label */}
             <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider shrink-0">
-              1s Trend:
+              {timeframe} Trend:
             </span>
 
             {/* Trend Direction Badge */}
@@ -857,6 +1071,53 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
                   ${hoveredCandle.close.toFixed(1)}
                 </span>
               </span>
+
+              {/* Passed Strategy Signal Badge on hovered candle */}
+              {hoveredCandle.signal && (
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide flex items-center gap-1.5 shadow-sm ${
+                    hoveredCandle.signal === 'BUY'
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-emerald-500/10'
+                      : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-rose-500/10'
+                  }`}
+                >
+                  <span>{hoveredCandle.signal === 'BUY' ? '▲ BUY' : '▼ SELL'}</span>
+                  {hoveredCandle.signal_outcome === 'TARGET_HIT' && (
+                    <span className="px-1 py-0.2 rounded bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/50">
+                      🎯 TARGET ({hoveredCandle.signal_pnl_r ?? '?'}R net)
+                    </span>
+                  )}
+                  {hoveredCandle.signal_outcome === 'BREAKEVEN_WIN' && (
+                    <span className="px-1 py-0.2 rounded bg-sky-500/30 text-sky-300 font-bold border border-sky-500/50">
+                      🔒 BREAKEVEN LOCK (+{hoveredCandle.signal_pnl_r ?? '0.1'}R net)
+                    </span>
+                  )}
+                  {hoveredCandle.signal_outcome === 'STOP_HIT' && (
+                    <span className="px-1 py-0.2 rounded bg-rose-500/30 text-rose-300 font-bold border border-rose-500/50">
+                      🛑 STOPPED ({hoveredCandle.signal_pnl_r ?? '?'}R net)
+                    </span>
+                  )}
+                  {hoveredCandle.signal_outcome === 'ACTIVE' && (
+                    <span className="px-1 py-0.2 rounded bg-cyan-500/30 text-cyan-300 font-bold border border-cyan-500/50">
+                      ⏳ ACTIVE
+                    </span>
+                  )}
+                  {hoveredCandle.signal_outcome === 'TIME_EXIT' && (
+                    <span className="px-1 py-0.2 rounded bg-amber-500/30 text-amber-300 font-bold border border-amber-500/50">
+                      ⏱ EXIT ({hoveredCandle.signal_pnl_r ?? '?'}R net)
+                    </span>
+                  )}
+                  {hoveredCandle.signal_price && (
+                    <span className="text-white font-mono">${hoveredCandle.signal_price.toFixed(1)}</span>
+                  )}
+                  {hoveredCandle.signal_stop && (
+                    <span className="text-rose-300 font-mono">SL ${hoveredCandle.signal_stop.toFixed(1)}</span>
+                  )}
+                  {hoveredCandle.signal_target && (
+                    <span className="text-emerald-300 font-mono">TP ${hoveredCandle.signal_target.toFixed(1)}</span>
+                  )}
+                </span>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2 text-[11px]">
@@ -867,6 +1128,18 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
               <span className="text-cyan-400 tabular-nums">
                 {atrValue !== null ? `$${atrValue.toFixed(1)}` : '—'}
               </span>
+              {passedSignalsList.length > 0 && (
+                <>
+                  <span className="text-gray-600">|</span>
+                  <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>{passedSignalsList.length} Passed Setups</span>
+                    <span className="text-gray-400 font-normal">
+                      ({passedSignalsList.filter(s => s.outcome === 'TARGET_HIT').length}🎯 Target · {passedSignalsList.filter(s => s.outcome === 'STOP_HIT').length}🛑 Stopped)
+                    </span>
+                  </span>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -876,6 +1149,19 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
           <span className="text-gray-500 flex items-center gap-1 mr-1 text-[10px] uppercase tracking-wider">
             <Layers className="w-3 h-3" /> Overlays:
           </span>
+
+          <button
+            onClick={() => toggleOverlay('signals')}
+            className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold transition-all flex items-center gap-1 ${
+              overlays.signals
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
+                : 'text-gray-500 border-transparent hover:text-gray-300'
+            }`}
+            title="Toggle Strategy Signals & Passed Candle Markers"
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${overlays.signals ? 'bg-emerald-400' : 'bg-gray-600'}`} />
+            <span>Signals {passedSignalsList.length > 0 ? `(${passedSignalsList.length})` : ''}</span>
+          </button>
 
           <button
             onClick={() => toggleOverlay('ema9')}
@@ -969,9 +1255,21 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         </div>
       </div>
 
+      {diagnostics && (
+        <div className="px-3 py-1.5 border-b border-[#1e2638] text-[11px] font-mono text-gray-400 flex flex-wrap gap-x-3 gap-y-1">
+          <span className="text-cyan-300">{timeframe} historical signals: {diagnostics.qualified_count}</span>
+          {!overlays.signals && <span className="text-amber-300">Arrows hidden — enable Signals above.</span>}
+          {diagnostics.qualified_count === 0 && <span>No qualifying setups in the loaded candles.</span>}
+          {diagnostics.filtered_count > 0 && (
+            <span>Filtered: {diagnostics.filtered_count} · {Object.entries(diagnostics.filtered_reasons).map(([reason, count]) => `${reason}: ${count}`).join(' · ')}</span>
+          )}
+          {diagnostics.candidate_count === 0 && <span>Big-move volume, candle strength and momentum rules were not met.</span>}
+        </div>
+      )}
+
       {/* 4. Chart Canvas Area */}
       <div className="relative flex-1 min-h-[500px] w-full" ref={chartContainerRef}>
-        {isLoading && (
+        {isLoading && !hasCandleData && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0b0e14]/60 backdrop-blur-sm">
             <div className="flex items-center gap-2 text-xs font-mono text-cyan-400">
               <RefreshCw className="w-4 h-4 animate-spin" />

@@ -8,18 +8,25 @@ from typing import Literal
 import pandas as pd
 
 from app.config import settings
+from app.timeframes import TIMEFRAME_SECONDS, timeframe_seconds
+from app.strategies.engine_safety import resolve_bar_exit
 from app.services.delta_market_data import market_data_service
-from app.decision_engine import decision_engine
+from app.decision_engine import decision_engine, SignalDecisionEngine
 from app.ml.prediction_engine import prediction_engine
 from app.services.paper_trading import paper_trading_service
-from app.services.backtest_service import run_sbr5_backtest, BacktestConfig
+from app.services.backtest_service import run_sbr5_backtest, BacktestConfig, compute_sbr5_signals
 from app.database import get_recent_signals, get_recent_alerts, get_risk_state, insert_alert
 from app.strategies.alpha1_orderflow import alpha1_strategy
 from app.strategies.alpha2_volatility import alpha2_strategy
 from app.strategies.alpha3_basis import alpha3_strategy
 from app.strategies.alpha4_dislocation import alpha4_dislocation
+from app.strategies.alpha5_sbr5 import sbr5_strategy
 
 router = APIRouter(prefix="/api")
+# Selected-timeframe signals are observational and do not write into the legacy
+# 5m signal ledger or drive the background paper-execution loop.
+timeframe_engines = {resolution: SignalDecisionEngine(resolution, persist=False)
+                     for resolution in TIMEFRAME_SECONDS if resolution != "5m"}
 
 @router.get('/strategies/bollinger8h')
 @router.get('/strategies/bollinger')
@@ -90,7 +97,8 @@ def get_ticker():
 
 @router.get("/market/candles")
 def get_candles(resolution: str = Query("5m", pattern="^(1m|3m|5m|15m|30m|1h|4h|1d)$"), limit: int = 250):
-    """Returns genuine historical candles with technical indicators and trend analysis."""
+    """Historical candles and modeled signals on the requested timeframe."""
+    bar_seconds = timeframe_seconds(resolution)
     df = market_data_service.fetch_candles_rest(resolution=resolution, count=limit)
     if df.empty:
         df = market_data_service.candles_cache.get(resolution, pd.DataFrame())
@@ -108,7 +116,7 @@ def get_candles(resolution: str = Query("5m", pattern="^(1m|3m|5m|15m|30m|1h|4h|
         }
 
     # Calculate indicators
-    d = df.copy()
+    d = df.sort_values('time').drop_duplicates('time').reset_index(drop=True).copy()
     close = d['close']
     d['ema_9'] = close.ewm(span=9, adjust=False).mean()
     d['ema_21'] = close.ewm(span=21, adjust=False).mean()
@@ -184,10 +192,126 @@ def get_candles(resolution: str = Query("5m", pattern="^(1m|3m|5m|15m|30m|1h|4h|
         "summary": trend_summary
     }
 
+    # Calculate strategy signals across historical candles (SBR-5 Sweep & Reclaim)
+    try:
+        cfg = BacktestConfig(
+            lookback=settings.SBR5_LOOKBACK,
+            vol_lookback=settings.SBR5_VOL_LOOKBACK,
+            atr_lookback=settings.SBR5_ATR_LOOKBACK,
+            volume_multiplier=settings.SBR5_VOLUME_MULTIPLIER,
+            sweep_atr=settings.SBR5_SWEEP_ATR,
+            reclaim_atr=settings.SBR5_RECLAIM_ATR,
+            max_reclaim_atr=settings.SBR5_MAX_RECLAIM_ATR,
+            stop_buffer_atr=settings.SBR5_STOP_BUFFER_ATR,
+            target_r=settings.SBR5_TARGET_R,
+            max_hold_bars=settings.SBR5_MAX_HOLD_BARS,
+            tick_size=settings.TICK_SIZE,
+            trend_filter=settings.SBR5_TREND_FILTER,
+            momentum_enabled=settings.SCALP5_MOMENTUM_ENABLED,
+            big_move_only=settings.SCALP5_BIG_MOVE_ONLY,
+            resolution=resolution, context_profile=settings.SCALP5_CONTEXT_PROFILE,
+        )
+        sig_df = compute_sbr5_signals(d, cfg)
+    except Exception:
+        sig_df = d.copy()
+        sig_df['long_signal'] = False
+        sig_df['short_signal'] = False
+
+    from app.strategies.alpha2_volatility import compute_alpha2_signals, alpha2_strategy
+    try:
+        a2_df = compute_alpha2_signals(d)
+    except Exception:
+        a2_df = d.copy()
+        a2_df['alpha2_long'] = False
+        a2_df['alpha2_short'] = False
+
+    # Check for recorded signals from database
+    db_signal_map = {}
+    try:
+        db_signals = get_recent_signals(limit=100)
+        for s in db_signals:
+            act = s.get("action")
+            if act in ("BUY", "SELL"):
+                c_ts = s.get("candle_timestamp") or s.get("timestamp")
+                if c_ts:
+                    db_signal_map[int(c_ts)] = s
+    except Exception:
+        pass
+
     candles_list = []
-    for _, row in d.iterrows():
-        candles_list.append({
-            "time": int(row['time']),
+    passed_signals = []
+    diagnostics = {"candidate_count": 0, "qualified_count": 0, "filtered_count": 0,
+                   "filtered_reasons": {}}
+    for idx, row in d.iterrows():
+        t_val = int(row['time'])
+        is_long = bool(sig_df.at[idx, 'long_signal']) if 'long_signal' in sig_df.columns and idx in sig_df.index else False
+        is_short = bool(sig_df.at[idx, 'short_signal']) if 'short_signal' in sig_df.columns and idx in sig_df.index else False
+        research_alpha_enabled = settings.ENABLE_RESEARCH_ALPHA2_SIGNALS and not settings.SCALP5_BIG_MOVE_ONLY
+        is_a2_l = research_alpha_enabled and bool(a2_df.at[idx, 'alpha2_long']) if 'alpha2_long' in a2_df.columns and idx in a2_df.index else False
+        is_a2_s = research_alpha_enabled and bool(a2_df.at[idx, 'alpha2_short']) if 'alpha2_short' in a2_df.columns and idx in a2_df.index else False
+
+        sig_action = None
+        sig_strategy = None
+        sig_price = None
+        sig_stop = None
+        sig_target = None
+
+        # Replayed completed-candle setups must pass
+        # the same funding, trend, stop-distance and cost gates as live ones.
+        # Volatility breakout takes top priority for catching explosive expansions;
+        # otherwise SBR-5 / Momentum setups.
+        if t_val + bar_seconds <= time.time() and (is_a2_l or is_a2_s or is_long or is_short):
+            diagnostics["candidate_count"] += 1
+            next_open = float(d.iloc[idx + 1]['open']) if idx + 1 < len(d) else float(row['close'])
+            setup = None
+            if is_long or is_short:
+                setup = sbr5_strategy.evaluate(
+                    d.iloc[:idx + 1],
+                    {"best_bid": next_open, "best_ask": next_open, "entry_time": t_val + bar_seconds},
+                    as_of=t_val + bar_seconds, resolution=resolution,
+                )
+            if not setup or not setup.get("is_setup"):
+                if is_a2_l or is_a2_s:
+                    setup = alpha2_strategy.evaluate(
+                        d.iloc[:idx + 1],
+                        {"best_bid": next_open, "best_ask": next_open, "entry_time": t_val + bar_seconds},
+                        resolution=resolution, as_of=t_val + bar_seconds
+                    )
+
+            if setup and setup.get("is_setup"):
+                diagnostics["qualified_count"] += 1
+                sig_action = setup["action"]
+                sig_strategy = setup["strategy"] + " (MODELED)"
+                sig_price = setup["entry_price"]
+                sig_stop = setup["stop_loss"]
+                sig_target = setup["take_profit"]
+                # Recorded setup levels take precedence for an eligible setup.
+                saved = db_signal_map.get(t_val, {}) if resolution == "5m" else {}
+                levels = [saved.get(k) for k in ("entry_price", "stop_loss", "take_profit")]
+                if saved.get("action") == sig_action and all(
+                    isinstance(v, (int, float)) and math.isfinite(v) and v > 0 for v in levels
+                ):
+                    e, st, tp = levels
+                    valid = st < e < tp if sig_action == "BUY" else tp < e < st
+                    if valid:
+                        sig_strategy = saved.get("strategy") or setup["strategy"]
+                        sig_price, sig_stop, sig_target = levels
+
+            else:
+                diagnostics["filtered_count"] += 1
+                reason = (setup or {}).get("reasons", [""])[0] if setup else "Condition not met"
+                category = ("Stop distance too wide" if "Stop distance" in reason else
+                            "Funding window" if "Funding snapshot" in reason else
+                            "Target too small after costs" if "target ignored" in reason or "gross reward" in reason else
+                            "Candle history incomplete" if "spacing" in reason or "Insufficient" in reason or "Candle history" in reason else
+                            "Entry moved too far" if "Entry drift" in reason else
+                            "Unsafe execution quote" if "bid/ask" in reason else
+                            "Other setup checks")
+                reasons = diagnostics["filtered_reasons"]
+                reasons[category] = reasons.get(category, 0) + 1
+
+        candle_item = {
+            "time": t_val,
             "open": float(row['open']),
             "high": float(row['high']),
             "low": float(row['low']),
@@ -203,14 +327,99 @@ def get_candles(resolution: str = Query("5m", pattern="^(1m|3m|5m|15m|30m|1h|4h|
             "atr": round(float(row['atr_14']), 1) if pd.notnull(row['atr_14']) else None,
             "rsi": round(float(row['rsi_14']), 1) if pd.notnull(row['rsi_14']) else None,
             "sbr_prev_high": round(float(row['prev_high_24']), 1) if pd.notnull(row['prev_high_24']) else None,
-            "sbr_prev_low": round(float(row['prev_low_24']), 1) if pd.notnull(row['prev_low_24']) else None
+            "sbr_prev_low": round(float(row['prev_low_24']), 1) if pd.notnull(row['prev_low_24']) else None,
+            "signal": sig_action,
+            "signal_action": sig_action,
+            "signal_strategy": sig_strategy,
+            "signal_price": sig_price,
+            "signal_stop": sig_stop,
+            "signal_target": sig_target,
+            "signal_outcome": None,
+            "signal_pnl_r": None,
+            "signal_exit_price": None,
+            "signal_exit_bars": None,
+        }
+        candles_list.append(candle_item)
+
+    # Model forward outcomes; candle OHLC cannot prove actual fills.
+    for i, c_item in enumerate(candles_list):
+        if not c_item.get("signal"):
+            continue
+        sig_act = c_item["signal"]
+        direction = 1 if sig_act == "BUY" else -1
+        entry_px = c_item["signal_price"] or c_item["close"]
+        stop_px = c_item["signal_stop"]
+        target_px = c_item["signal_target"]
+
+        outcome = "ACTIVE"
+        exit_px = None
+        exit_bars = None
+
+        max_hold = settings.SBR5_MAX_HOLD_BARS
+        lookahead = candles_list[i + 1 : i + 1 + max_hold]
+        cur_stop = stop_px
+        risk_dist = abs(entry_px - stop_px) if stop_px else 1.0
+
+        for step, nxt in enumerate(lookahead):
+            if nxt['time'] != c_item['time'] + (step + 1) * bar_seconds:
+                # Do not invent a trade outcome across unavailable bars.
+                break
+
+            # Dynamic Breakeven Ratchet (+1.0R in favorable direction -> lock entry + fee buffer)
+            if direction == 1 and nxt["high"] >= entry_px + 1.0 * risk_dist:
+                cur_stop = max(cur_stop, entry_px + entry_px * 0.0014)
+            elif direction == -1 and nxt["low"] <= entry_px - 1.0 * risk_dist:
+                cur_stop = min(cur_stop, entry_px - entry_px * 0.0014)
+
+            # Dynamic Trailing Stop (+1.5R in favorable direction -> lock +0.75R profit)
+            if direction == 1 and nxt["high"] >= entry_px + 1.5 * risk_dist:
+                cur_stop = max(cur_stop, entry_px + 0.75 * risk_dist)
+            elif direction == -1 and nxt["low"] <= entry_px - 1.5 * risk_dist:
+                cur_stop = min(cur_stop, entry_px - 0.75 * risk_dist)
+
+            result = resolve_bar_exit(nxt, direction, cur_stop, target_px,
+                                      timeout=(step == max_hold - 1 and nxt['time'] + bar_seconds <= time.time()))
+            if result is not None:
+                exit_px, outcome_raw = result
+                outcome = "BREAKEVEN_WIN" if outcome_raw == "STOP_HIT" and (direction * (exit_px - entry_px) > 0) else outcome_raw
+                exit_bars = step + 1
+                break
+
+        pnl_r = None
+        if exit_px is not None and stop_px:
+            # Entry includes modeled entry slippage. Apply exit slippage and
+            # both taker fees; R is net P&L divided by initial price risk.
+            filled_exit = exit_px * (1 - direction * settings.DEFAULT_SLIP_PER_LEG_BPS / 10000)
+            fees = (entry_px + filled_exit) * settings.FEE_TAKER_BPS / 10000 * settings.GST_MULTIPLIER
+            risk_dist = abs(entry_px - stop_px)
+            pnl_r = round((direction * (filled_exit - entry_px) - fees) / risk_dist, 2) if risk_dist else None
+            exit_px = round(filled_exit, 1)
+
+        c_item["signal_outcome"] = outcome
+        c_item["signal_pnl_r"] = pnl_r
+        c_item["signal_exit_price"] = exit_px
+        c_item["signal_exit_bars"] = exit_bars
+
+        passed_signals.append({
+            "time": c_item["time"],
+            "action": c_item["signal_action"],
+            "strategy": c_item["signal_strategy"],
+            "price": c_item["signal_price"],
+            "stop_loss": c_item["signal_stop"],
+            "take_profit": c_item["signal_target"],
+            "outcome": outcome,
+            "pnl_r": pnl_r,
+            "exit_price": exit_px,
+            "exit_bars": exit_bars,
         })
 
     return {
         "resolution": resolution,
         "count": len(candles_list),
         "candles": candles_list,
-        "trend": trend_info
+        "trend": trend_info,
+        "passed_signals": passed_signals,
+        "signal_diagnostics": diagnostics,
     }
 
 @router.get("/market/trends")
@@ -273,11 +482,31 @@ def get_orderbook():
 
 # 2. Strategy Signals
 @router.get("/signals/current")
-def get_current_signal():
+def get_current_signal(resolution: str = Query("5m", pattern="^(1m|3m|5m|15m|30m|1h|4h|1d)$")):
+    # Also support direct internal calls without a FastAPI dependency wrapper.
+    if not isinstance(resolution, str):
+        resolution = "5m"
+    bar_seconds = timeframe_seconds(resolution)
     m_state = market_data_service.get_market_state()
-    df_5m = market_data_service.candles_5m
-    decision = decision_engine.evaluate(df_5m, m_state)
-    return decision
+    engine = decision_engine if resolution == "5m" else timeframe_engines[resolution]
+    if resolution == "5m":
+        candles = market_data_service.candles_5m
+    else:
+        candles = market_data_service.fetch_candles_rest(resolution=resolution, count=250)
+        if candles.empty:
+            candles = market_data_service.candles_cache.get(resolution, pd.DataFrame())
+    if candles is not None and not candles.empty:
+        candles = candles.sort_values('time').drop_duplicates('time')
+        candles = candles[candles['time'] + bar_seconds <= time.time()]
+        if not candles.empty and time.time() - float(candles.iloc[-1]['time']) > 2 * bar_seconds:
+            return {"action": "WAIT / NO TRADE", "direction": 0, "strategy": "DATA SAFETY",
+                    "resolution": resolution, "bar_seconds": bar_seconds,
+                    "status": "STALE_CANDLES", "timestamp": int(time.time()),
+                    "max_hold_bars": settings.SBR5_MAX_HOLD_BARS,
+                    "max_hold_seconds": settings.SBR5_MAX_HOLD_BARS * bar_seconds,
+                    "reasons": [f"Waiting for fresh completed {resolution} candles"],
+                    "invalidation_risks": ["Selected-timeframe candle history is stale"]}
+    return engine.evaluate(candles, m_state)
 
 @router.get("/signals/history")
 def get_signals_history(limit: int = 50):
@@ -331,6 +560,7 @@ def get_strategies_status():
                 "reclaim_max_atr": settings.SBR5_MAX_RECLAIM_ATR,
                 "target_r": settings.SBR5_TARGET_R,
                 "max_hold_bars": settings.SBR5_MAX_HOLD_BARS,
+                "big_move_only": settings.SCALP5_BIG_MOVE_ONLY,
                 "min_stop_pct": settings.SBR5_MIN_STOP_FRACTION * 100,
                 "max_stop_pct": settings.SBR5_MAX_STOP_FRACTION * 100
             }

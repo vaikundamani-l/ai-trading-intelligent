@@ -1,8 +1,11 @@
 """Transparent setup confluence, deliberately not a probability of profit."""
 import math
 import time
+import pandas as pd
 
 def assess_setup(decision, market, candles):
+    bar_seconds = int(decision.get('bar_seconds') or 300)
+    resolution = decision.get('resolution', '5m')
     direction = decision.get('direction', 0)
     active = decision.get('status') == 'ACTIVE_SETUP' and direction in (-1, 1)
     try:
@@ -12,16 +15,23 @@ def assess_setup(decision, market, candles):
         rr, spread = 0, float('inf')
     recent = False
     aligned = False
-    if candles is not None and not candles.empty and {'time', 'close'}.issubset(candles.columns):
-        completed = candles[candles['time'] + 300 <= time.time()]
-        if len(completed) >= 50:
-            recent = time.time() - float(completed.iloc[-1]['time']) <= 600
+    if isinstance(candles, pd.DataFrame) and not candles.empty and {'time', 'close'}.issubset(candles.columns):
+        try:
+            times, prices = candles['time'].astype(float), candles['close'].astype(float)
+            if not times.map(math.isfinite).all() or not prices.map(math.isfinite).all() or (prices <= 0).any():
+                raise ValueError('Invalid quality evidence')
+            completed = candles.assign(time=times, close=prices)
+            completed = completed[completed['time'] + bar_seconds <= time.time()]
+        except (ValueError, TypeError):
+            completed = None
+        if completed is not None and len(completed) >= 50:
+            recent = time.time() - float(completed.iloc[-1]['time']) <= 2 * bar_seconds
             close = completed['close']
             fast = close.ewm(span=9, adjust=False).mean().iloc[-1]
             slow = close.ewm(span=21, adjust=False).mean().iloc[-1]
             aligned = bool(direction * (fast - slow) > 0)
     checks = [
-        dict(label='Completed SBR-5 setup', passed=active),
+        dict(label=f'Completed {resolution} setup', passed=active),
         dict(label='Fresh and safe market', passed=bool(market.get('is_data_safe')) and recent),
         dict(label='Spread at most 2 bps', passed=bool(math.isfinite(spread) and 0 <= spread <= 2)),
         dict(label='Net target reward/risk at least 1.2', passed=bool(math.isfinite(rr) and rr >= 1.2)),

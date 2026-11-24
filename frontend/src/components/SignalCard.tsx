@@ -19,12 +19,14 @@ interface SignalCardProps {
   signal: SignalDecision | null;
   market: MarketState | null;
   onPaperExecute?: () => void;
+  timeframe?: string;
 }
 
 export const SignalCard: React.FC<SignalCardProps> = ({
   signal,
   market,
   onPaperExecute,
+  timeframe = '5m',
 }) => {
   const [showDetails, setShowDetails] = useState<boolean>(true);
 
@@ -41,7 +43,7 @@ export const SignalCard: React.FC<SignalCardProps> = ({
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
           <h2 className="text-xs font-bold font-mono tracking-wider text-white uppercase">
-            Trade Suggestion & Evidence
+            {timeframe} Signal & Evidence
           </h2>
         </div>
         <span className="text-[11px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
@@ -98,7 +100,7 @@ export const SignalCard: React.FC<SignalCardProps> = ({
               {isBuy ? 'BUY / LONG' : isSell ? 'SELL / SHORT' : isHalted ? 'HALTED / UNSAFE' : 'WAIT / NO TRADE'}
             </div>
             <div className="text-xs text-gray-400 font-mono mt-0.5">
-              {signal?.status || 'Awaiting completed 5m candle'}
+              {signal?.status || `Awaiting completed ${timeframe} candle`}
             </div>
           </div>
         </div>
@@ -228,7 +230,7 @@ export const SignalCard: React.FC<SignalCardProps> = ({
           Regime: <span className="text-white font-semibold">{signal?.market_regime || 'RANGING'}</span>
         </span>
         <span className="text-gray-500">
-          Max Hold: 25 min (5 bars)
+          Max Hold: {signal?.max_hold_bars ?? 5} × {timeframe} candles
         </span>
       </div>
     </div>
